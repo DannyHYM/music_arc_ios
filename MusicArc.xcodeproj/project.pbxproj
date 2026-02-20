@@ -1,0 +1,459 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0848D0C938BDD55D5218733D /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */; };
+		0E8FFDC71384A4254E000EF1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E2E6D38F1B7857AD869D81 /* GameView.swift */; };
+		10FAE5DF902D768901E85BF0 /* SessionSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */; };
+		18230D53CC30288EC05CA9C2 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5417EAE91E0FF6283A0B9F /* CameraManager.swift */; };
+		256E1FA58EEB59B69748432A /* NoteLaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6149C21C9E6FF207F29E82 /* NoteLaneView.swift */; };
+		2D318FB825DBE1B644C3CCB7 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F27992A52C3723E8B285FF8 /* GameSession.swift */; };
+		4A7288C89FB887FE6239CB68 /* SessionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */; };
+		4F63A0D3B86D4B8D36904562 /* TouchPoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7861D8AC0E53B94362C5191 /* TouchPoseProvider.swift */; };
+		59318CB5DF9E6F4E268DE479 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A3B48F251943BCF58980C5 /* CalibrationView.swift */; };
+		5C49DAF1DE16F62EA5334FDD /* NoteScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE784F921B4BE9225C1CA6F /* NoteScheduler.swift */; };
+		5F43E047C092FD1197AF0B43 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B24EFBF10ADA66AAD534480 /* ContentView.swift */; };
+		7780AE98403087AF7F5ACA0E /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B05D51B04467F0C772BB44 /* GameResult.swift */; };
+		8336142E7A10A9CDFA569CA4 /* MusicArcApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59B98E082B0C7BAA5C9F7AF2 /* MusicArcApp.swift */; };
+		89853FB242D378C50327862F /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE61C3FAC78D6B9E171FA5F /* Note.swift */; };
+		91ED0E9502AAC0348CA2B5D1 /* GameConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5484C3FBBE251B2BAF6D5780 /* GameConfig.swift */; };
+		9459CA52535E3CA24FABEA6C /* PoseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB085D22AF1B58AF00A06232 /* PoseDetector.swift */; };
+		A37798E95DC5FB402DB2F8DE /* DemoPoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588990019878917578F57FC7 /* DemoPoseProvider.swift */; };
+		B211B86C455FDDFF4B1CC7C8 /* CalibrationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C7E5EEB9186E9D0A1A7F29 /* CalibrationData.swift */; };
+		B713CD39EBE8F125B4D729E1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B8B102150C688539A56DFC /* HomeView.swift */; };
+		C830FC0DF855D66BBAC756A9 /* ScoreTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A48B9F43F133491B340189B /* ScoreTracker.swift */; };
+		E715C0DD10226848E7E1C416 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A49F3B3260B61412A8A1BFD /* Assets.xcassets */; };
+		EC6553ADAEB907EA1CFDBC3C /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */; };
+		F5A2A98FB8E64BCF50EDCF96 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */; };
+		FC78124884060B145C52B3F0 /* PoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03CF380A6C6325F215043D4 /* PoseProvider.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0A48B9F43F133491B340189B /* ScoreTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreTracker.swift; sourceTree = "<group>"; };
+		0A49F3B3260B61412A8A1BFD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0F27992A52C3723E8B285FF8 /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
+		14B8B102150C688539A56DFC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		2D6149C21C9E6FF207F29E82 /* NoteLaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteLaneView.swift; sourceTree = "<group>"; };
+		2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryView.swift; sourceTree = "<group>"; };
+		37C7E5EEB9186E9D0A1A7F29 /* CalibrationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationData.swift; sourceTree = "<group>"; };
+		5484C3FBBE251B2BAF6D5780 /* GameConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfig.swift; sourceTree = "<group>"; };
+		588990019878917578F57FC7 /* DemoPoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoPoseProvider.swift; sourceTree = "<group>"; };
+		59B98E082B0C7BAA5C9F7AF2 /* MusicArcApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicArcApp.swift; sourceTree = "<group>"; };
+		5DE61C3FAC78D6B9E171FA5F /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		5F5417EAE91E0FF6283A0B9F /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
+		69E2E6D38F1B7857AD869D81 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
+		6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
+		75AB39140E95EFD75B748D48 /* MusicArc.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MusicArc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
+		7B24EFBF10ADA66AAD534480 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
+		8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		9FE784F921B4BE9225C1CA6F /* NoteScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteScheduler.swift; sourceTree = "<group>"; };
+		B5B05D51B04467F0C772BB44 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
+		C8A3B48F251943BCF58980C5 /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
+		DB085D22AF1B58AF00A06232 /* PoseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetector.swift; sourceTree = "<group>"; };
+		E03CF380A6C6325F215043D4 /* PoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseProvider.swift; sourceTree = "<group>"; };
+		E7861D8AC0E53B94362C5191 /* TouchPoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPoseProvider.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		25C276D9576F98F4D8D51E00 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C8A3B48F251943BCF58980C5 /* CalibrationView.swift */,
+				6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */,
+				69E2E6D38F1B7857AD869D81 /* GameView.swift */,
+				14B8B102150C688539A56DFC /* HomeView.swift */,
+				2D6149C21C9E6FF207F29E82 /* NoteLaneView.swift */,
+				2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */,
+				80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		26078E59295B277E7DDD9858 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				7B24EFBF10ADA66AAD534480 /* ContentView.swift */,
+				59B98E082B0C7BAA5C9F7AF2 /* MusicArcApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		5ABEFFFF69ADBD86FD1C32C3 /* Tracking */ = {
+			isa = PBXGroup;
+			children = (
+				5F5417EAE91E0FF6283A0B9F /* CameraManager.swift */,
+				588990019878917578F57FC7 /* DemoPoseProvider.swift */,
+				DB085D22AF1B58AF00A06232 /* PoseDetector.swift */,
+				E03CF380A6C6325F215043D4 /* PoseProvider.swift */,
+				E7861D8AC0E53B94362C5191 /* TouchPoseProvider.swift */,
+			);
+			path = Tracking;
+			sourceTree = "<group>";
+		};
+		617C09C8FAD754C2F6CB4C89 = {
+			isa = PBXGroup;
+			children = (
+				C4B3954850C68858ACD1B8D9 /* MusicArc */,
+				8D0ABFC32564EA324FFF1903 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		78F29DDEA3233325E5115D23 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0A49F3B3260B61412A8A1BFD /* Assets.xcassets */,
+				DCBA5C2416CA69D75A7354A0 /* Sounds */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		8D0ABFC32564EA324FFF1903 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				75AB39140E95EFD75B748D48 /* MusicArc.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A92B96E77DBDD4DA0845FF4A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				37C7E5EEB9186E9D0A1A7F29 /* CalibrationData.swift */,
+				5484C3FBBE251B2BAF6D5780 /* GameConfig.swift */,
+				B5B05D51B04467F0C772BB44 /* GameResult.swift */,
+				0F27992A52C3723E8B285FF8 /* GameSession.swift */,
+				5DE61C3FAC78D6B9E171FA5F /* Note.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B5A187E53E6B987BF2B16A00 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		C4B3954850C68858ACD1B8D9 /* MusicArc */ = {
+			isa = PBXGroup;
+			children = (
+				26078E59295B277E7DDD9858 /* App */,
+				B5A187E53E6B987BF2B16A00 /* Audio */,
+				F0888C6B6C0889D7A789BFB6 /* Game */,
+				A92B96E77DBDD4DA0845FF4A /* Models */,
+				78F29DDEA3233325E5115D23 /* Resources */,
+				5ABEFFFF69ADBD86FD1C32C3 /* Tracking */,
+				25C276D9576F98F4D8D51E00 /* Views */,
+			);
+			path = MusicArc;
+			sourceTree = "<group>";
+		};
+		DCBA5C2416CA69D75A7354A0 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
+		F0888C6B6C0889D7A789BFB6 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */,
+				9FE784F921B4BE9225C1CA6F /* NoteScheduler.swift */,
+				0A48B9F43F133491B340189B /* ScoreTracker.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		748754F7C180A3B11EA73F27 /* MusicArc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 43698EE8284B6363E58FEFBD /* Build configuration list for PBXNativeTarget "MusicArc" */;
+			buildPhases = (
+				63B51C66E8631994D29D5351 /* Sources */,
+				C4F05F2283C78E52AEC5D5C9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MusicArc;
+			packageProductDependencies = (
+			);
+			productName = MusicArc;
+			productReference = 75AB39140E95EFD75B748D48 /* MusicArc.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		282CDD7936018F2426B02981 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1630;
+			};
+			buildConfigurationList = AAD6107130043C426D2BFE5A /* Build configuration list for PBXProject "MusicArc" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 617C09C8FAD754C2F6CB4C89;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				748754F7C180A3B11EA73F27 /* MusicArc */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C4F05F2283C78E52AEC5D5C9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E715C0DD10226848E7E1C416 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		63B51C66E8631994D29D5351 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC6553ADAEB907EA1CFDBC3C /* AudioManager.swift in Sources */,
+				B211B86C455FDDFF4B1CC7C8 /* CalibrationData.swift in Sources */,
+				59318CB5DF9E6F4E268DE479 /* CalibrationView.swift in Sources */,
+				18230D53CC30288EC05CA9C2 /* CameraManager.swift in Sources */,
+				0848D0C938BDD55D5218733D /* CameraPreviewView.swift in Sources */,
+				5F43E047C092FD1197AF0B43 /* ContentView.swift in Sources */,
+				A37798E95DC5FB402DB2F8DE /* DemoPoseProvider.swift in Sources */,
+				91ED0E9502AAC0348CA2B5D1 /* GameConfig.swift in Sources */,
+				F5A2A98FB8E64BCF50EDCF96 /* GameEngine.swift in Sources */,
+				7780AE98403087AF7F5ACA0E /* GameResult.swift in Sources */,
+				2D318FB825DBE1B644C3CCB7 /* GameSession.swift in Sources */,
+				0E8FFDC71384A4254E000EF1 /* GameView.swift in Sources */,
+				B713CD39EBE8F125B4D729E1 /* HomeView.swift in Sources */,
+				8336142E7A10A9CDFA569CA4 /* MusicArcApp.swift in Sources */,
+				89853FB242D378C50327862F /* Note.swift in Sources */,
+				256E1FA58EEB59B69748432A /* NoteLaneView.swift in Sources */,
+				5C49DAF1DE16F62EA5334FDD /* NoteScheduler.swift in Sources */,
+				9459CA52535E3CA24FABEA6C /* PoseDetector.swift in Sources */,
+				FC78124884060B145C52B3F0 /* PoseProvider.swift in Sources */,
+				C830FC0DF855D66BBAC756A9 /* ScoreTracker.swift in Sources */,
+				4A7288C89FB887FE6239CB68 /* SessionHistoryView.swift in Sources */,
+				10FAE5DF902D768901E85BF0 /* SessionSummaryView.swift in Sources */,
+				4F63A0D3B86D4B8D36904562 /* TouchPoseProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1BDD16B3F853C3F0098525A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		37B9C6481F05865E20CC2F69 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Music Arc";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Music Arc needs camera access to track your arm movements during the rehab game.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.musicarc.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6FB5340136CC5CFF228BA6E2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		D93FD2FFA9531EA53C345D0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Music Arc";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Music Arc needs camera access to track your arm movements during the rehab game.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.musicarc.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		43698EE8284B6363E58FEFBD /* Build configuration list for PBXNativeTarget "MusicArc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D93FD2FFA9531EA53C345D0A /* Debug */,
+				37B9C6481F05865E20CC2F69 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AAD6107130043C426D2BFE5A /* Build configuration list for PBXProject "MusicArc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FB5340136CC5CFF228BA6E2 /* Debug */,
+				1BDD16B3F853C3F0098525A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 282CDD7936018F2426B02981 /* Project object */;
+}

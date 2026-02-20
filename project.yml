@@ -1,0 +1,29 @@
+name: MusicArc
+options:
+  bundleIdPrefix: com.musicarc
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "16.3"
+  generateEmptyDirectories: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    SUPPORTS_MACCATALYST: "NO"
+targets:
+  MusicArc:
+    type: application
+    platform: iOS
+    sources:
+      - path: MusicArc
+    resources:
+      - path: MusicArc/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.musicarc.app
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_CFBundleDisplayName: "Music Arc"
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
+        INFOPLIST_KEY_NSCameraUsageDescription: "Music Arc needs camera access to track your arm movements during the rehab game."
