@@ -32,3 +32,8 @@ enum AppRoute: Hashable {
     case summary(GameResult)
     case history
 }
+
+#Preview {
+    ContentView()
+        .modelContainer(for: GameSession.self, inMemory: true)
+}

@@ -34,7 +34,7 @@ final class CameraManager: NSObject, ObservableObject {
         session.sessionPreset = .medium
 
         guard
-            let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+            let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
             let input = try? AVCaptureDeviceInput(device: device),
             session.canAddInput(input)
         else {

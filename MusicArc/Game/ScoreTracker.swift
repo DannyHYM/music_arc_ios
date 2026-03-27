@@ -1,33 +1,38 @@
 import Foundation
 
 final class ScoreTracker {
-    private(set) var hits = 0
-    private(set) var misses = 0
-    private(set) var currentStreak = 0
-    private(set) var maxStreak = 0
+    private(set) var totalGrowth: Double = 0.0
+    private(set) var treeHealth: Double = 1.0
+    private(set) var repGrowths: [Double] = []
+    private(set) var repRestScores: [Double] = []
+    private(set) var completedReps: Int = 0
 
-    var totalJudged: Int { hits + misses }
+    var growthPercentage: Double { min(totalGrowth, 1.0) }
 
-    var hitRate: Double {
-        guard totalJudged > 0 else { return 0 }
-        return Double(hits) / Double(totalJudged)
+    var averageRestCompliance: Double {
+        guard !repRestScores.isEmpty else { return 1.0 }
+        return repRestScores.reduce(0, +) / Double(repRestScores.count)
     }
 
-    func recordHit() {
-        hits += 1
-        currentStreak += 1
-        maxStreak = max(maxStreak, currentStreak)
+    func addGrowth(_ amount: Double) {
+        totalGrowth = min(totalGrowth + amount, 1.0)
     }
 
-    func recordMiss() {
-        misses += 1
-        currentStreak = 0
+    func penalizeHealth(_ amount: Double) {
+        treeHealth = max(treeHealth - amount, 0.0)
+    }
+
+    func finishRep(growth: Double, restCompliance: Double) {
+        repGrowths.append(growth)
+        repRestScores.append(restCompliance)
+        completedReps += 1
     }
 
     func reset() {
-        hits = 0
-        misses = 0
-        currentStreak = 0
-        maxStreak = 0
+        totalGrowth = 0.0
+        treeHealth = 1.0
+        repGrowths = []
+        repRestScores = []
+        completedReps = 0
     }
 }

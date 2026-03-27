@@ -4,9 +4,6 @@ import AudioToolbox
 final class AudioManager {
     static let shared = AudioManager()
 
-    private var audioEngine: AVAudioEngine?
-    private var tonePlayer: AVAudioPlayerNode?
-
     private init() {
         configureAudioSession()
     }
@@ -16,13 +13,7 @@ final class AudioManager {
         try? AVAudioSession.sharedInstance().setActive(true)
     }
 
-    func playHit() {
-        playTone(frequency: 880, duration: 0.15)
-    }
-
-    func playMiss() {
-        playTone(frequency: 220, duration: 0.1)
-    }
+    // MARK: - Countdown (unchanged)
 
     func playCountdownTick() {
         AudioServicesPlaySystemSound(1104)
@@ -32,34 +23,57 @@ final class AudioManager {
         AudioServicesPlaySystemSound(1025)
     }
 
-    func playSessionComplete() {
-        playTone(frequency: 660, duration: 0.12)
+    // MARK: - Growth
+
+    func playGrowth() {
+        playChord(frequencies: [523.25, 659.25], duration: 0.2, volume: 0.2)
+    }
+
+    // MARK: - Day/Night Transitions
+
+    func playDayTransition() {
+        playChord(frequencies: [440, 554.37, 659.25], duration: 0.25, volume: 0.15)
+    }
+
+    func playNightTransition() {
+        playTone(frequency: 330, duration: 0.3, volume: 0.12)
+    }
+
+    // MARK: - Session Complete
+
+    func playTreeComplete() {
+        playTone(frequency: 523.25, duration: 0.12, volume: 0.25)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            self.playTone(frequency: 880, duration: 0.12)
+            self.playTone(frequency: 659.25, duration: 0.12, volume: 0.25)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
-            self.playTone(frequency: 1100, duration: 0.2)
+            self.playChord(frequencies: [783.99, 1046.5], duration: 0.3, volume: 0.25)
         }
     }
 
-    private func playTone(frequency: Double, duration: Double) {
+    // MARK: - Tone Generation
+
+    private func playTone(frequency: Double, duration: Double, volume: Float = 0.3) {
+        playChord(frequencies: [frequency], duration: duration, volume: volume)
+    }
+
+    private func playChord(frequencies: [Double], duration: Double, volume: Float = 0.3) {
         let sampleRate: Double = 44100
         let frameCount = AVAudioFrameCount(sampleRate * duration)
 
         guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1) else { return }
-
-        let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)!
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
         buffer.frameLength = frameCount
 
         let data = buffer.floatChannelData![0]
-        let angularFreq = 2.0 * Double.pi * frequency / sampleRate
+        let amplitude = volume / Float(frequencies.count)
 
         for i in 0..<Int(frameCount) {
             let t = Double(i)
-            let envelope: Double
             let attackSamples = min(Double(frameCount) * 0.1, 200)
-            let releaseSamples = min(Double(frameCount) * 0.3, 600)
+            let releaseSamples = min(Double(frameCount) * 0.4, 800)
 
+            let envelope: Double
             if t < attackSamples {
                 envelope = t / attackSamples
             } else if t > Double(frameCount) - releaseSamples {
@@ -68,7 +82,12 @@ final class AudioManager {
                 envelope = 1.0
             }
 
-            data[i] = Float(sin(angularFreq * t) * envelope * 0.3)
+            var sample: Float = 0
+            for freq in frequencies {
+                let angularFreq = 2.0 * Double.pi * freq / sampleRate
+                sample += Float(sin(angularFreq * t) * envelope) * amplitude
+            }
+            data[i] = sample
         }
 
         let engine = AVAudioEngine()
@@ -83,7 +102,7 @@ final class AudioManager {
             }
             player.play()
         } catch {
-            // Silently fail -- audio is non-critical
+            // Audio is non-critical
         }
     }
 }

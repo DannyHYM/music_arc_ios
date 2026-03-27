@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,25 +11,27 @@
 		0E8FFDC71384A4254E000EF1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E2E6D38F1B7857AD869D81 /* GameView.swift */; };
 		10FAE5DF902D768901E85BF0 /* SessionSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */; };
 		18230D53CC30288EC05CA9C2 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5417EAE91E0FF6283A0B9F /* CameraManager.swift */; };
-		256E1FA58EEB59B69748432A /* NoteLaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6149C21C9E6FF207F29E82 /* NoteLaneView.swift */; };
 		2D318FB825DBE1B644C3CCB7 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F27992A52C3723E8B285FF8 /* GameSession.swift */; };
 		4A7288C89FB887FE6239CB68 /* SessionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */; };
 		4F63A0D3B86D4B8D36904562 /* TouchPoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7861D8AC0E53B94362C5191 /* TouchPoseProvider.swift */; };
 		59318CB5DF9E6F4E268DE479 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A3B48F251943BCF58980C5 /* CalibrationView.swift */; };
-		5C49DAF1DE16F62EA5334FDD /* NoteScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE784F921B4BE9225C1CA6F /* NoteScheduler.swift */; };
 		5F43E047C092FD1197AF0B43 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B24EFBF10ADA66AAD534480 /* ContentView.swift */; };
 		7780AE98403087AF7F5ACA0E /* GameResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B05D51B04467F0C772BB44 /* GameResult.swift */; };
 		8336142E7A10A9CDFA569CA4 /* MusicArcApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59B98E082B0C7BAA5C9F7AF2 /* MusicArcApp.swift */; };
-		89853FB242D378C50327862F /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE61C3FAC78D6B9E171FA5F /* Note.swift */; };
 		91ED0E9502AAC0348CA2B5D1 /* GameConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5484C3FBBE251B2BAF6D5780 /* GameConfig.swift */; };
 		9459CA52535E3CA24FABEA6C /* PoseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB085D22AF1B58AF00A06232 /* PoseDetector.swift */; };
 		A37798E95DC5FB402DB2F8DE /* DemoPoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588990019878917578F57FC7 /* DemoPoseProvider.swift */; };
+		A7B8C9D0E1F2A3B4C5D6E7F8 /* RepScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* RepScheduler.swift */; };
 		B211B86C455FDDFF4B1CC7C8 /* CalibrationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37C7E5EEB9186E9D0A1A7F29 /* CalibrationData.swift */; };
 		B713CD39EBE8F125B4D729E1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B8B102150C688539A56DFC /* HomeView.swift */; };
+		B8C9D0E1F2A3B4C5D6E7F8A9 /* TreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F6A7B8C9D0E1F2A3B4 /* TreeView.swift */; };
 		C830FC0DF855D66BBAC756A9 /* ScoreTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A48B9F43F133491B340189B /* ScoreTracker.swift */; };
+		C9D0E1F2A3B4C5D6E7F8A9B0 /* SkyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* SkyView.swift */; };
+		D0E1F2A3B4C5D6E7F8A9B0C1 /* TreeGrowthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F6A7B8C9D0E1F2A3B4C5D6 /* TreeGrowthView.swift */; };
 		E715C0DD10226848E7E1C416 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A49F3B3260B61412A8A1BFD /* Assets.xcassets */; };
 		EC6553ADAEB907EA1CFDBC3C /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */; };
 		F5A2A98FB8E64BCF50EDCF96 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */; };
+		F6A7B8C9D0E1F2A3B4C5D6E7 /* Rep.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Rep.swift */; };
 		FC78124884060B145C52B3F0 /* PoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03CF380A6C6325F215043D4 /* PoseProvider.swift */; };
 /* End PBXBuildFile section */
 
@@ -38,26 +40,28 @@
 		0A49F3B3260B61412A8A1BFD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0F27992A52C3723E8B285FF8 /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
 		14B8B102150C688539A56DFC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		2D6149C21C9E6FF207F29E82 /* NoteLaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteLaneView.swift; sourceTree = "<group>"; };
 		2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryView.swift; sourceTree = "<group>"; };
 		37C7E5EEB9186E9D0A1A7F29 /* CalibrationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationData.swift; sourceTree = "<group>"; };
 		5484C3FBBE251B2BAF6D5780 /* GameConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfig.swift; sourceTree = "<group>"; };
 		588990019878917578F57FC7 /* DemoPoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoPoseProvider.swift; sourceTree = "<group>"; };
 		59B98E082B0C7BAA5C9F7AF2 /* MusicArcApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicArcApp.swift; sourceTree = "<group>"; };
-		5DE61C3FAC78D6B9E171FA5F /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		5F5417EAE91E0FF6283A0B9F /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
 		69E2E6D38F1B7857AD869D81 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
-		75AB39140E95EFD75B748D48 /* MusicArc.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MusicArc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75AB39140E95EFD75B748D48 /* MusicArc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicArc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
 		7B24EFBF10ADA66AAD534480 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
 		8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
-		9FE784F921B4BE9225C1CA6F /* NoteScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteScheduler.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Rep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rep.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* RepScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepScheduler.swift; sourceTree = "<group>"; };
 		B5B05D51B04467F0C772BB44 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* TreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeView.swift; sourceTree = "<group>"; };
 		C8A3B48F251943BCF58980C5 /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
+		D4E5F6A7B8C9D0E1F2A3B4C5 /* SkyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyView.swift; sourceTree = "<group>"; };
 		DB085D22AF1B58AF00A06232 /* PoseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetector.swift; sourceTree = "<group>"; };
 		E03CF380A6C6325F215043D4 /* PoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseProvider.swift; sourceTree = "<group>"; };
+		E5F6A7B8C9D0E1F2A3B4C5D6 /* TreeGrowthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeGrowthView.swift; sourceTree = "<group>"; };
 		E7861D8AC0E53B94362C5191 /* TouchPoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPoseProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -69,9 +73,11 @@
 				6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */,
 				69E2E6D38F1B7857AD869D81 /* GameView.swift */,
 				14B8B102150C688539A56DFC /* HomeView.swift */,
-				2D6149C21C9E6FF207F29E82 /* NoteLaneView.swift */,
 				2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */,
 				80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */,
+				D4E5F6A7B8C9D0E1F2A3B4C5 /* SkyView.swift */,
+				C3D4E5F6A7B8C9D0E1F2A3B4 /* TreeView.swift */,
+				E5F6A7B8C9D0E1F2A3B4C5D6 /* TreeGrowthView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -129,7 +135,7 @@
 				5484C3FBBE251B2BAF6D5780 /* GameConfig.swift */,
 				B5B05D51B04467F0C772BB44 /* GameResult.swift */,
 				0F27992A52C3723E8B285FF8 /* GameSession.swift */,
-				5DE61C3FAC78D6B9E171FA5F /* Note.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* Rep.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -167,7 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */,
-				9FE784F921B4BE9225C1CA6F /* NoteScheduler.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* RepScheduler.swift */,
 				0A48B9F43F133491B340189B /* ScoreTracker.swift */,
 			);
 			path = Game;
@@ -213,7 +219,6 @@
 			);
 			mainGroup = 617C09C8FAD754C2F6CB4C89;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -252,14 +257,16 @@
 				0E8FFDC71384A4254E000EF1 /* GameView.swift in Sources */,
 				B713CD39EBE8F125B4D729E1 /* HomeView.swift in Sources */,
 				8336142E7A10A9CDFA569CA4 /* MusicArcApp.swift in Sources */,
-				89853FB242D378C50327862F /* Note.swift in Sources */,
-				256E1FA58EEB59B69748432A /* NoteLaneView.swift in Sources */,
-				5C49DAF1DE16F62EA5334FDD /* NoteScheduler.swift in Sources */,
 				9459CA52535E3CA24FABEA6C /* PoseDetector.swift in Sources */,
 				FC78124884060B145C52B3F0 /* PoseProvider.swift in Sources */,
+				F6A7B8C9D0E1F2A3B4C5D6E7 /* Rep.swift in Sources */,
+				A7B8C9D0E1F2A3B4C5D6E7F8 /* RepScheduler.swift in Sources */,
 				C830FC0DF855D66BBAC756A9 /* ScoreTracker.swift in Sources */,
 				4A7288C89FB887FE6239CB68 /* SessionHistoryView.swift in Sources */,
 				10FAE5DF902D768901E85BF0 /* SessionSummaryView.swift in Sources */,
+				B8C9D0E1F2A3B4C5D6E7F8A9 /* TreeView.swift in Sources */,
+				C9D0E1F2A3B4C5D6E7F8A9B0 /* SkyView.swift in Sources */,
+				D0E1F2A3B4C5D6E7F8A9B0C1 /* TreeGrowthView.swift in Sources */,
 				4F63A0D3B86D4B8D36904562 /* TouchPoseProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -331,6 +338,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 57BH973548;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Music Arc";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Music Arc needs camera access to track your arm movements during the rehab game.";
@@ -417,6 +425,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 57BH973548;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Music Arc";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Music Arc needs camera access to track your arm movements during the rehab game.";

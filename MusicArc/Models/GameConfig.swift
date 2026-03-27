@@ -7,15 +7,24 @@ enum InputMode: String, Hashable, CaseIterable {
 }
 
 struct GameConfig: Hashable {
-    var durationSeconds: Int = 60
-    var noteCount: Int = 12
-    var targetHeights: [Double] = [0.2, 0.5, 0.8]
-    var hitTolerance: Double = 0.15
+    var repCount: Int = 8
+    var activeDuration: TimeInterval = 4.0
+    var restDuration: TimeInterval = 3.0
+    var sunlightThreshold: Double = 0.7
+    var restThreshold: Double = 0.3
     var inputMode: InputMode = .touch
 
     var isDemoMode: Bool { inputMode == .demo }
     var isTouchMode: Bool { inputMode == .touch }
     var isCameraMode: Bool { inputMode == .camera }
+
+    var totalSessionDuration: TimeInterval {
+        let countdown: TimeInterval = 3.0
+        let buffer: TimeInterval = 2.0
+        return countdown + Double(repCount) * (activeDuration + restDuration) + buffer
+    }
+
+    var totalSessionSeconds: Int { Int(ceil(totalSessionDuration)) }
 
     static var cameraAvailable: Bool {
         #if targetEnvironment(simulator)

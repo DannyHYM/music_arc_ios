@@ -9,15 +9,20 @@ struct CalibrationView: View {
     @State private var recordedMin: Double = 1.0
     @State private var recordedMax: Double = 0.0
     @State private var currentHeight: Double = 0.5
-    @State private var poseProvider: (any PoseProvider)?
-    @State private var cancellable: AnyCancellable?
+    @State private var currentPose = ArmPose(
+        shoulder: nil, elbow: nil, wrist: nil,
+        normalizedHeight: 0.5, isTracking: false
+    )
+    @State private var poseDetector: PoseDetector?
+    @State private var heightCancellable: AnyCancellable?
+    @State private var poseCancellable: AnyCancellable?
     @State private var phaseTimer: AnyCancellable?
     @State private var progress: Double = 0
 
     enum CalibrationPhase: String {
         case intro = "Get Ready"
-        case raiseArm = "Raise Your Arm"
-        case lowerArm = "Lower Your Arm"
+        case raiseArm = "Reach for the Sun"
+        case lowerArm = "Return to Earth"
         case done = "All Set!"
     }
 
@@ -27,9 +32,42 @@ struct CalibrationView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            if needsCalibration, let detector = poseDetector {
+                CameraPreviewView(session: detector.captureSession)
+                    .ignoresSafeArea()
+
+                SkeletonOverlayView(pose: currentPose)
+                    .ignoresSafeArea()
+
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.55),
+                        Color.black.opacity(0.2),
+                        Color.black.opacity(0.55)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.15, green: 0.25, blue: 0.1),
+                        Color(red: 0.1, green: 0.18, blue: 0.08),
+                        Color.black
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }
 
             VStack(spacing: 32) {
+                if needsCalibration {
+                    trackingStatusBadge
+                        .padding(.top, 16)
+                }
+
                 Spacer()
 
                 phaseIcon
@@ -42,13 +80,13 @@ struct CalibrationView: View {
 
                 Text(phaseInstruction)
                     .font(.body)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.white.opacity(0.85))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
 
                 if phase == .raiseArm || phase == .lowerArm {
                     ProgressView(value: progress)
-                        .tint(.purple)
+                        .tint(.green)
                         .padding(.horizontal, 60)
 
                     heightBar
@@ -70,7 +108,7 @@ struct CalibrationView: View {
                             .padding(.vertical, 14)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.purple)
+                    .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
                     .padding(.horizontal, 40)
                 }
 
@@ -78,7 +116,7 @@ struct CalibrationView: View {
                     Button {
                         finishCalibration()
                     } label: {
-                        Label("Start Game", systemImage: "play.fill")
+                        Label("Start Growing", systemImage: "leaf.fill")
                             .font(.title3.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -101,15 +139,39 @@ struct CalibrationView: View {
                 .foregroundStyle(.white)
             }
         }
+        .onAppear {
+            if needsCalibration {
+                setupPoseDetector()
+            }
+        }
         .onDisappear { cleanup() }
     }
+
+    // MARK: - Tracking Status
+
+    private var trackingStatusBadge: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(currentPose.isTracking ? Color.green : Color.orange)
+                .frame(width: 8, height: 8)
+
+            Text(currentPose.isTracking ? "Tracking your arm" : "Looking for you\u{2026}")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(.white.opacity(0.9))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial.opacity(0.6), in: Capsule())
+    }
+
+    // MARK: - Phase UI
 
     private var phaseIcon: some View {
         Group {
             switch phase {
             case .intro: Image(systemName: needsCalibration ? "figure.stand" : "hand.draw")
-            case .raiseArm: Image(systemName: "arrow.up.circle.fill")
-            case .lowerArm: Image(systemName: "arrow.down.circle.fill")
+            case .raiseArm: Image(systemName: "sun.max.fill")
+            case .lowerArm: Image(systemName: "arrow.down.to.line")
             case .done: Image(systemName: "checkmark.circle.fill")
             }
         }
@@ -123,20 +185,20 @@ struct CalibrationView: View {
             } else if config.isDemoMode {
                 return "Auto-demo mode will play the game automatically.\n\nNo calibration needed."
             } else {
-                return "Stand so the camera can see your upper body. We'll quickly measure your arm range."
+                return "Position yourself so the camera can see your upper body.\nCheck the tracking dots on your arm, then tap begin."
             }
         case .raiseArm:
-            return "Raise your arm as HIGH as you can and hold it there."
+            return "Raise your hand as HIGH as you can and hold it there.\nThis is how high the sun will go!"
         case .lowerArm:
-            return "Now lower your arm as LOW as comfortable and hold."
+            return "Now lower your hand as LOW as comfortable and hold.\nThis is your resting position."
         case .done:
-            return "Calibration complete! Your arm range has been recorded."
+            return "Calibration complete! Your range has been recorded.\nLet's grow a tree!"
         }
     }
 
     private var heightBar: some View {
         HStack(spacing: 8) {
-            Text("Low")
+            Image(systemName: "arrow.down")
                 .font(.caption2)
                 .foregroundStyle(.white.opacity(0.5))
             GeometryReader { geo in
@@ -144,23 +206,31 @@ struct CalibrationView: View {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.white.opacity(0.15))
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(.purple)
+                        .fill(
+                            LinearGradient(
+                                colors: [.green.opacity(0.6), .yellow],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .frame(width: geo.size.width * currentHeight)
                 }
             }
             .frame(height: 10)
-            Text("High")
+            Image(systemName: "sun.max.fill")
                 .font(.caption2)
-                .foregroundStyle(.white.opacity(0.5))
+                .foregroundStyle(.yellow.opacity(0.7))
         }
         .padding(.horizontal, 40)
     }
 
-    private func startCalibration() {
-        let provider: any PoseProvider = PoseDetector()
-        self.poseProvider = provider
+    // MARK: - Pose Detection
 
-        cancellable = provider.armHeightPublisher
+    private func setupPoseDetector() {
+        let detector = PoseDetector()
+        self.poseDetector = detector
+
+        heightCancellable = detector.armHeightPublisher
             .receive(on: DispatchQueue.main)
             .sink { height in
                 self.currentHeight = height
@@ -171,7 +241,18 @@ struct CalibrationView: View {
                 }
             }
 
-        provider.start()
+        poseCancellable = detector.armPosePublisher?
+            .receive(on: DispatchQueue.main)
+            .sink { pose in
+                self.currentPose = pose
+            }
+
+        detector.start()
+    }
+
+    // MARK: - Calibration Flow
+
+    private func startCalibration() {
         beginRaisePhase()
     }
 
@@ -188,7 +269,6 @@ struct CalibrationView: View {
         progress = 0
         startPhaseTimer(duration: 4.0) {
             phase = .done
-            poseProvider?.stop()
         }
     }
 
@@ -224,7 +304,18 @@ struct CalibrationView: View {
 
     private func cleanup() {
         phaseTimer?.cancel()
-        cancellable?.cancel()
-        poseProvider?.stop()
+        heightCancellable?.cancel()
+        poseCancellable?.cancel()
+        poseDetector?.stop()
+        poseDetector = nil
+    }
+}
+
+#Preview {
+    NavigationStack {
+        CalibrationView(
+            config: GameConfig(inputMode: .touch),
+            navigationPath: .constant(NavigationPath())
+        )
     }
 }

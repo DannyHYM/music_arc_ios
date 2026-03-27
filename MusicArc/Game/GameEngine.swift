@@ -2,17 +2,30 @@ import Foundation
 import Combine
 import SwiftUI
 
+enum GamePhase: Equatable {
+    case countdown
+    case active
+    case rest
+    case complete
+}
+
 @Observable
 final class GameEngine {
-    // Published game state
-    var notes: [GameNote] = []
-    var currentArmHeight: Double = 0.5
+    var reps: [Rep] = []
+    var currentArmHeight: Double = 0.0
     var elapsedTime: TimeInterval = 0
     var isRunning = false
     var isFinished = false
-    var lastHitNoteID: UUID?
-    var lastMissNoteID: UUID?
     var countdownValue: Int = 3
+    var isInCountdown = true
+
+    var currentPhase: GamePhase = .countdown
+    var currentRepIndex: Int = 0
+    var phaseTimeRemaining: TimeInterval = 0
+    var treeGrowth: Double = 0.0
+    var treeHealth: Double = 1.0
+    var isRestingProperly: Bool = true
+    var currentRepGrowth: Double = 0.0
 
     let config: GameConfig
     let calibration: CalibrationData
@@ -23,10 +36,15 @@ final class GameEngine {
     private var poseCancellable: AnyCancellable?
     private var startTime: Date?
 
-    private let hitWindowDuration: TimeInterval = 0.8
     private let audio = AudioManager.shared
     private var countdownTimer: AnyCancellable?
-    var isInCountdown = true
+
+    private var lastTickTime: Date?
+    private var currentRepRestAccumulator: TimeInterval = 0
+    private var currentRepRestTotal: TimeInterval = 0
+    private var lastGrowthMilestone: Int = 0
+
+    private(set) var touchProvider: TouchPoseProvider?
 
     init(config: GameConfig, calibration: CalibrationData) {
         self.config = config
@@ -36,14 +54,21 @@ final class GameEngine {
     func start() {
         guard !isRunning else { return }
 
-        notes = NoteScheduler.generate(config: config)
+        reps = RepScheduler.generate(config: config)
         scoreTracker.reset()
         elapsedTime = 0
         isFinished = false
-        lastHitNoteID = nil
-        lastMissNoteID = nil
         countdownValue = 3
         isInCountdown = true
+        currentPhase = .countdown
+        currentRepIndex = 0
+        treeGrowth = 0.0
+        treeHealth = 1.0
+        isRestingProperly = true
+        currentRepGrowth = 0.0
+        currentRepRestAccumulator = 0
+        currentRepRestTotal = 0
+        lastGrowthMilestone = 0
         isRunning = true
 
         startCountdown()
@@ -68,8 +93,6 @@ final class GameEngine {
             }
     }
 
-    private(set) var touchProvider: TouchPoseProvider?
-
     private func beginGameplay() {
         let provider: any PoseProvider
         switch config.inputMode {
@@ -93,6 +116,10 @@ final class GameEngine {
 
         provider.start()
         startTime = Date()
+        lastTickTime = Date()
+
+        currentPhase = .active
+        audio.playDayTransition()
 
         gameTimer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common)
             .autoconnect()
@@ -116,11 +143,12 @@ final class GameEngine {
     func buildResult() -> GameResult {
         GameResult(
             date: .now,
-            durationSeconds: config.durationSeconds,
-            totalNotes: notes.count,
-            hits: scoreTracker.hits,
-            misses: scoreTracker.misses,
-            maxStreak: scoreTracker.maxStreak,
+            durationSeconds: config.totalSessionSeconds,
+            totalReps: config.repCount,
+            completedReps: scoreTracker.completedReps,
+            treeGrowth: scoreTracker.growthPercentage,
+            treeHealth: scoreTracker.treeHealth,
+            avgRestCompliance: scoreTracker.averageRestCompliance,
             inputMode: config.inputMode
         )
     }
@@ -129,53 +157,99 @@ final class GameEngine {
 
     private func tick() {
         guard let startTime else { return }
-        elapsedTime = Date().timeIntervalSince(startTime)
+        let now = Date()
+        let dt = lastTickTime.map { now.timeIntervalSince($0) } ?? (1.0 / 30.0)
+        lastTickTime = now
+        elapsedTime = now.timeIntervalSince(startTime)
 
-        judgeNotes()
-
-        if elapsedTime >= TimeInterval(config.durationSeconds) {
-            judgeMissedRemaining()
-            audio.playSessionComplete()
-            stop()
-            isFinished = true
+        guard currentRepIndex < reps.count else {
+            finishSession()
+            return
         }
-    }
 
-    private func judgeNotes() {
-        for i in notes.indices {
-            guard !notes[i].wasJudged else { continue }
+        let rep = reps[currentRepIndex]
 
-            let noteTime = notes[i].scheduledTime
-            let windowStart = noteTime
-            let windowEnd = noteTime + hitWindowDuration
-
-            guard elapsedTime >= windowStart else { continue }
-
-            if elapsedTime <= windowEnd {
-                let distance = abs(currentArmHeight - notes[i].targetHeight)
-                if distance <= config.hitTolerance {
-                    notes[i].wasJudged = true
-                    notes[i].wasHit = true
-                    notes[i].hitTime = elapsedTime
-                    scoreTracker.recordHit()
-                    audio.playHit()
-                    lastHitNoteID = notes[i].id
-                }
-            } else {
-                notes[i].wasJudged = true
-                notes[i].wasHit = false
-                scoreTracker.recordMiss()
-                audio.playMiss()
-                lastMissNoteID = notes[i].id
+        if elapsedTime < rep.activeEndTime && elapsedTime >= rep.activeStartTime {
+            if currentPhase != .active {
+                currentPhase = .active
+                currentRepGrowth = 0.0
+                audio.playDayTransition()
+            }
+            phaseTimeRemaining = rep.activeEndTime - elapsedTime
+            updateGrowth(dt: dt)
+        } else if elapsedTime >= rep.restStartTime && elapsedTime < rep.restEndTime {
+            if currentPhase != .rest {
+                currentPhase = .rest
+                currentRepRestAccumulator = 0
+                currentRepRestTotal = 0
+                audio.playNightTransition()
+            }
+            phaseTimeRemaining = rep.restEndTime - elapsedTime
+            updateRest(dt: dt)
+        } else if elapsedTime >= rep.restEndTime {
+            finishCurrentRep()
+            currentRepIndex += 1
+            if currentRepIndex >= reps.count {
+                finishSession()
             }
         }
     }
 
-    private func judgeMissedRemaining() {
-        for i in notes.indices where !notes[i].wasJudged {
-            notes[i].wasJudged = true
-            notes[i].wasHit = false
-            scoreTracker.recordMiss()
+    private func updateGrowth(dt: TimeInterval) {
+        let height = currentArmHeight
+        guard height >= config.sunlightThreshold else { return }
+
+        let growthRate = (height - config.sunlightThreshold) / (1.0 - config.sunlightThreshold)
+        let maxGrowthPerRep = 1.0 / Double(config.repCount)
+        let increment = growthRate * maxGrowthPerRep * (dt / config.activeDuration)
+
+        currentRepGrowth += increment
+        scoreTracker.addGrowth(increment)
+        treeGrowth = scoreTracker.growthPercentage
+
+        let milestone = Int(treeGrowth * 10)
+        if milestone > lastGrowthMilestone {
+            lastGrowthMilestone = milestone
+            audio.playGrowth()
         }
+    }
+
+    private func updateRest(dt: TimeInterval) {
+        currentRepRestTotal += dt
+        if currentArmHeight <= config.restThreshold {
+            isRestingProperly = true
+            currentRepRestAccumulator += dt
+        } else {
+            isRestingProperly = false
+            let penalty = 0.02 * dt
+            scoreTracker.penalizeHealth(penalty)
+            treeHealth = scoreTracker.treeHealth
+        }
+    }
+
+    private func finishCurrentRep() {
+        let restCompliance: Double
+        if currentRepRestTotal > 0 {
+            restCompliance = currentRepRestAccumulator / currentRepRestTotal
+        } else {
+            restCompliance = 1.0
+        }
+        scoreTracker.finishRep(growth: currentRepGrowth, restCompliance: restCompliance)
+        if currentRepIndex < reps.count {
+            reps[currentRepIndex].growthEarned = currentRepGrowth
+            reps[currentRepIndex].restCompliance = restCompliance
+            reps[currentRepIndex].isComplete = true
+        }
+    }
+
+    private func finishSession() {
+        guard !isFinished else { return }
+        if currentRepIndex < reps.count && !reps[currentRepIndex].isComplete {
+            finishCurrentRep()
+        }
+        currentPhase = .complete
+        audio.playTreeComplete()
+        stop()
+        isFinished = true
     }
 }

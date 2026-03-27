@@ -3,107 +3,203 @@ import SwiftUI
 struct HomeView: View {
     @Binding var navigationPath: NavigationPath
     @State private var inputMode: InputMode = .touch
-    @State private var sessionDuration = 60
+    @State private var repCount: Int = 8
+    @State private var activeDuration: Double = 4.0
+    @State private var restDuration: Double = 3.0
 
-    private let durationOptions = [30, 45, 60, 90]
+    private var estimatedTime: Int {
+        let config = GameConfig(
+            repCount: repCount,
+            activeDuration: activeDuration,
+            restDuration: restDuration,
+            inputMode: inputMode
+        )
+        return config.totalSessionSeconds
+    }
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(.systemBackground), Color.purple.opacity(0.15)],
+                colors: [
+                    Color(red: 0.85, green: 0.95, blue: 0.85),
+                    Color(red: 0.65, green: 0.85, blue: 0.65),
+                    Color(red: 0.4, green: 0.65, blue: 0.35)
+                ],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 28) {
-                Spacer()
+            ScrollView {
+                VStack(spacing: 24) {
+                    Spacer(minLength: 20)
 
-                VStack(spacing: 8) {
-                    Image(systemName: "waveform.path")
-                        .font(.system(size: 64))
-                        .foregroundStyle(.purple)
-                    Text("Music Arc")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                    Text("Rehab Game Prototype")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    headerSection
+
+                    sessionConfigSection
+
+                    inputModeSection
+
+                    startButton
+
+                    historyButton
+
+                    Spacer(minLength: 20)
                 }
-
-                Spacer()
-
-                VStack(spacing: 16) {
-                    Text("Session Duration")
-                        .font(.headline)
-                    Picker("Duration", selection: $sessionDuration) {
-                        ForEach(durationOptions, id: \.self) { d in
-                            Text("\(d)s").tag(d)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 40)
-                }
-
-                VStack(spacing: 10) {
-                    Text("Input Mode")
-                        .font(.headline)
-
-                    Picker("Input Mode", selection: $inputMode) {
-                        ForEach(InputMode.allCases, id: \.self) { mode in
-                            Text(mode.rawValue).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 40)
-
-                    Text(inputModeDescription)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                        .frame(height: 32)
-
-                    if inputMode == .camera && !GameConfig.cameraAvailable {
-                        Label("Camera not available in Simulator", systemImage: "exclamationmark.triangle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.orange)
-                    }
-                }
-
-                Button {
-                    let effectiveMode: InputMode
-                    if inputMode == .camera && !GameConfig.cameraAvailable {
-                        effectiveMode = .touch
-                    } else {
-                        effectiveMode = inputMode
-                    }
-                    let config = GameConfig(
-                        durationSeconds: sessionDuration,
-                        inputMode: effectiveMode
-                    )
-                    navigationPath.append(AppRoute.calibration(config))
-                } label: {
-                    Label("Start Session", systemImage: "play.fill")
-                        .font(.title3.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.purple)
-                .padding(.horizontal, 40)
-
-                Button {
-                    navigationPath.append(AppRoute.history)
-                } label: {
-                    Label("Session History", systemImage: "clock.arrow.circlepath")
-                        .font(.body)
-                }
-                .padding(.bottom, 8)
-
-                Spacer()
+                .padding(.horizontal, 24)
             }
         }
         .navigationBarHidden(true)
+    }
+
+    // MARK: - Header
+
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "tree.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(Color(red: 0.25, green: 0.55, blue: 0.25))
+
+            Text("MusicArc Forest")
+                .font(.system(size: 36, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
+
+            Text("Grow your tree through movement")
+                .font(.subheadline)
+                .foregroundStyle(Color(red: 0.3, green: 0.5, blue: 0.3))
+        }
+    }
+
+    // MARK: - Session Config
+
+    private var sessionConfigSection: some View {
+        VStack(spacing: 16) {
+            Text("Session Setup")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+
+            VStack(spacing: 12) {
+                configRow(
+                    label: "Reps",
+                    value: "\(repCount)",
+                    icon: "repeat"
+                ) {
+                    Stepper("", value: $repCount, in: 4...16)
+                        .labelsHidden()
+                }
+
+                configRow(
+                    label: "Hold Time",
+                    value: String(format: "%.0fs", activeDuration),
+                    icon: "sun.max.fill"
+                ) {
+                    Stepper("", value: $activeDuration, in: 2...8, step: 1)
+                        .labelsHidden()
+                }
+
+                configRow(
+                    label: "Rest Time",
+                    value: String(format: "%.0fs", restDuration),
+                    icon: "moon.fill"
+                ) {
+                    Stepper("", value: $restDuration, in: 2...6, step: 1)
+                        .labelsHidden()
+                }
+
+                HStack {
+                    Image(systemName: "clock")
+                        .foregroundStyle(.secondary)
+                    Text("Estimated: \(estimatedTime)s")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 4)
+            }
+            .padding(16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
+    private func configRow<Content: View>(label: String, value: String, icon: String, @ViewBuilder control: () -> Content) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundStyle(Color(red: 0.3, green: 0.6, blue: 0.3))
+                .frame(width: 24)
+            Text(label)
+                .font(.body)
+            Spacer()
+            Text(value)
+                .font(.system(.body, design: .rounded).weight(.semibold))
+                .foregroundStyle(Color(red: 0.2, green: 0.5, blue: 0.2))
+                .frame(width: 40, alignment: .trailing)
+            control()
+        }
+    }
+
+    // MARK: - Input Mode
+
+    private var inputModeSection: some View {
+        VStack(spacing: 10) {
+            Text("Input Mode")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+
+            Picker("Input Mode", selection: $inputMode) {
+                ForEach(InputMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Text(inputModeDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(height: 32)
+
+            if inputMode == .camera && !GameConfig.cameraAvailable {
+                Label("Camera not available in Simulator", systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
+        }
+    }
+
+    // MARK: - Buttons
+
+    private var startButton: some View {
+        Button {
+            let effectiveMode: InputMode
+            if inputMode == .camera && !GameConfig.cameraAvailable {
+                effectiveMode = .touch
+            } else {
+                effectiveMode = inputMode
+            }
+            let config = GameConfig(
+                repCount: repCount,
+                activeDuration: activeDuration,
+                restDuration: restDuration,
+                inputMode: effectiveMode
+            )
+            navigationPath.append(AppRoute.calibration(config))
+        } label: {
+            Label("Start Growing", systemImage: "leaf.fill")
+                .font(.title3.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
+    }
+
+    private var historyButton: some View {
+        Button {
+            navigationPath.append(AppRoute.history)
+        } label: {
+            Label("My Forest", systemImage: "tree.fill")
+                .font(.body)
+        }
+        .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
     }
 
     private var inputModeDescription: String {
@@ -115,5 +211,11 @@ struct HomeView: View {
         case .demo:
             return "Automated arm movement (watch the game play itself)"
         }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        HomeView(navigationPath: .constant(NavigationPath()))
     }
 }
