@@ -4,6 +4,8 @@ struct SkyView: View {
     let phase: GamePhase
     let handHeight: Double
     let isRestingProperly: Bool
+    let isInSunlightZone: Bool
+    let sunlightThreshold: Double
 
     private var isDay: Bool { phase == .active || phase == .countdown }
 
@@ -14,13 +16,21 @@ struct SkyView: View {
                     .ignoresSafeArea()
 
                 if isDay {
+                    sunBeamView(in: geo)
+                        .opacity(isInSunlightZone ? 1.0 : 0.0)
+
                     sunView(in: geo)
+
+                    if phase == .active {
+                        thresholdLine(in: geo)
+                    }
                 } else if phase == .rest {
                     nightElements(in: geo)
                 }
             }
             .animation(.easeInOut(duration: 1.0), value: isDay)
             .animation(.easeInOut(duration: 0.5), value: isRestingProperly)
+            .animation(.easeOut(duration: 0.3), value: isInSunlightZone)
         }
     }
 
@@ -60,6 +70,57 @@ struct SkyView: View {
                 )
             }
         }
+    }
+
+    // MARK: - Sun Beams
+
+    private func sunBeamView(in geo: GeometryProxy) -> some View {
+        let sunMinY = geo.size.height * 0.7
+        let sunMaxY = geo.size.height * 0.12
+        let sunY = sunMinY - (sunMinY - sunMaxY) * handHeight
+        let sunX = geo.size.width * 0.8
+        let beamIntensity = isInSunlightZone
+            ? min(1.0, (handHeight - sunlightThreshold) / (1.0 - sunlightThreshold))
+            : 0.0
+
+        return SunBeamShape(sunX: sunX, sunY: sunY)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.yellow.opacity(0.2 * beamIntensity),
+                        Color.orange.opacity(0.08 * beamIntensity),
+                        Color.clear
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .allowsHitTesting(false)
+    }
+
+    // MARK: - Threshold Line
+
+    private func thresholdLine(in geo: GeometryProxy) -> some View {
+        let h = geo.size.height
+        let w = geo.size.width
+        let sunMinY = h * 0.7
+        let sunMaxY = h * 0.12
+        let lineY = sunMinY - (sunMinY - sunMaxY) * sunlightThreshold
+
+        return Canvas { context, size in
+            let glowRect = CGRect(x: 0, y: lineY - 12, width: w, height: 24)
+            context.fill(Path(glowRect), with: .color(Color.yellow.opacity(0.06)))
+
+            var dashPath = Path()
+            var x: CGFloat = 30
+            while x < w - 30 {
+                dashPath.move(to: CGPoint(x: x, y: lineY))
+                dashPath.addLine(to: CGPoint(x: min(x + 12, w - 30), y: lineY))
+                x += 24
+            }
+            context.stroke(dashPath, with: .color(Color.yellow.opacity(0.35)), lineWidth: 1.5)
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: - Sun
@@ -139,6 +200,29 @@ struct SkyView: View {
                     .position(x: w * starX, y: h * starY)
             }
         }
+    }
+}
+
+// MARK: - Sun Beam Shape
+
+private struct SunBeamShape: Shape {
+    let sunX: CGFloat
+    let sunY: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let topHalfWidth: CGFloat = 25
+        let treeX = rect.width * 0.5
+        let bottomHalfWidth = rect.width * 0.3
+        let groundY = rect.height * 0.85
+
+        path.move(to: CGPoint(x: sunX - topHalfWidth, y: sunY + 30))
+        path.addLine(to: CGPoint(x: treeX - bottomHalfWidth, y: groundY))
+        path.addLine(to: CGPoint(x: treeX + bottomHalfWidth, y: groundY))
+        path.addLine(to: CGPoint(x: sunX + topHalfWidth, y: sunY + 30))
+        path.closeSubpath()
+
+        return path
     }
 }
 

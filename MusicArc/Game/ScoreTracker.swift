@@ -22,6 +22,10 @@ final class ScoreTracker {
         treeHealth = max(treeHealth - amount, 0.0)
     }
 
+    func restoreHealth(_ amount: Double) {
+        treeHealth = min(treeHealth + amount, 1.0)
+    }
+
     func finishRep(growth: Double, restCompliance: Double) {
         repGrowths.append(growth)
         repRestScores.append(restCompliance)

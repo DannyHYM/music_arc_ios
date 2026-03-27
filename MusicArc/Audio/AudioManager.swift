@@ -26,7 +26,11 @@ final class AudioManager {
     // MARK: - Growth
 
     func playGrowth() {
-        playChord(frequencies: [523.25, 659.25], duration: 0.2, volume: 0.2)
+        playChord(frequencies: [523.25, 659.25], duration: 0.12, volume: 0.15)
+    }
+
+    func playMilestone() {
+        playChord(frequencies: [523.25, 659.25, 783.99], duration: 0.35, volume: 0.25)
     }
 
     // MARK: - Day/Night Transitions

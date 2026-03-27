@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct GameView: View {
     let config: GameConfig
@@ -19,7 +20,11 @@ struct GameView: View {
                     treeGrowth: engine.treeGrowth,
                     treeHealth: engine.treeHealth,
                     isRestingProperly: engine.isRestingProperly,
-                    sunlightThreshold: config.sunlightThreshold
+                    sunlightThreshold: config.sunlightThreshold,
+                    restThreshold: config.restThreshold,
+                    waterLevel: engine.waterLevel,
+                    isInSunlightZone: engine.isInSunlightZone,
+                    growthSpurtCount: engine.growthSpurtCount
                 )
                 .ignoresSafeArea()
                 .opacity(engine.isInCountdown ? 0.4 : 1.0)
@@ -47,6 +52,11 @@ struct GameView: View {
                     touchCaptureLayer(engine: engine)
                 }
 
+                if !engine.isInCountdown && !engine.isFinished {
+                    PhasePromptOverlay(prompt: engine.phasePrompt)
+                        .offset(y: -40)
+                }
+
                 if engine.isInCountdown {
                     countdownOverlay(engine: engine)
                 }
@@ -66,6 +76,17 @@ struct GameView: View {
         }
         .onDisappear {
             engine?.stop()
+        }
+        .onChange(of: engine?.growthSpurtCount ?? 0) { oldVal, newVal in
+            guard newVal > oldVal, newVal > 0 else { return }
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+        }
+        .onChange(of: engine?.waterLevel ?? 0) { oldVal, newVal in
+            if newVal > oldVal && Int(newVal * 5) > Int(oldVal * 5) {
+                let generator = UIImpactFeedbackGenerator(style: .soft)
+                generator.impactOccurred()
+            }
         }
     }
 
@@ -191,16 +212,44 @@ struct GameView: View {
     // MARK: - Overlays
 
     private func countdownOverlay(engine: GameEngine) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Text(engine.countdownValue > 0 ? "\(engine.countdownValue)" : "Grow!")
                 .font(.system(size: 96, weight: .heavy, design: .rounded))
                 .foregroundStyle(.white)
                 .contentTransition(.numericText())
                 .animation(.easeInOut(duration: 0.3), value: engine.countdownValue)
 
-            Text(config.isTouchMode ? "Drag up & down to play" : "Get ready...")
-                .font(.title3)
-                .foregroundStyle(.white.opacity(0.6))
+            VStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "sun.max.fill")
+                        .foregroundStyle(.yellow)
+                        .frame(width: 24)
+                    Text("Raise your hand to grow the tree")
+                        .foregroundStyle(.white.opacity(0.85))
+                }
+
+                HStack(spacing: 10) {
+                    Image(systemName: "cloud.rain.fill")
+                        .foregroundStyle(.cyan)
+                        .frame(width: 24)
+                    Text("Lower your hand to water it")
+                        .foregroundStyle(.white.opacity(0.85))
+                }
+
+                if config.isTouchMode {
+                    HStack(spacing: 10) {
+                        Image(systemName: "hand.draw")
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(width: 24)
+                        Text("Drag up & down to control")
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+            }
+            .font(.system(size: 15, weight: .medium, design: .rounded))
+            .padding(.horizontal, 28)
+            .padding(.vertical, 16)
+            .background(.ultraThinMaterial.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
         }
     }
 
@@ -232,6 +281,27 @@ struct GameView: View {
                 .padding(.top, 8)
             }
         }
+    }
+}
+
+// MARK: - Phase Prompt
+
+private struct PhasePromptOverlay: View {
+    let prompt: String?
+
+    var body: some View {
+        ZStack {
+            if let prompt {
+                Text(prompt)
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.6), radius: 8, y: 3)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .transition(.opacity.combined(with: .offset(y: -10)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.5), value: prompt)
     }
 }
 

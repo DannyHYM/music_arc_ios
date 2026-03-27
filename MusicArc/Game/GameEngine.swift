@@ -27,6 +27,11 @@ final class GameEngine {
     var isRestingProperly: Bool = true
     var currentRepGrowth: Double = 0.0
 
+    var phasePrompt: String? = nil
+    var waterLevel: Double = 0.0
+    var isInSunlightZone: Bool = false
+    var growthSpurtCount: Int = 0
+
     let config: GameConfig
     let calibration: CalibrationData
     let scoreTracker = ScoreTracker()
@@ -43,6 +48,9 @@ final class GameEngine {
     private var currentRepRestAccumulator: TimeInterval = 0
     private var currentRepRestTotal: TimeInterval = 0
     private var lastGrowthMilestone: Int = 0
+    private var growthSpurtAccumulator: Double = 0.0
+    private var restBonusMultiplier: Double = 1.0
+    private var phasePromptShowTime: Date?
 
     private(set) var touchProvider: TouchPoseProvider?
 
@@ -66,9 +74,16 @@ final class GameEngine {
         treeHealth = 1.0
         isRestingProperly = true
         currentRepGrowth = 0.0
+        phasePrompt = nil
+        waterLevel = 0.0
+        isInSunlightZone = false
+        growthSpurtCount = 0
+        growthSpurtAccumulator = 0.0
+        restBonusMultiplier = 1.0
         currentRepRestAccumulator = 0
         currentRepRestTotal = 0
         lastGrowthMilestone = 0
+        phasePromptShowTime = nil
         isRunning = true
 
         startCountdown()
@@ -120,6 +135,7 @@ final class GameEngine {
 
         currentPhase = .active
         audio.playDayTransition()
+        showPhasePrompt("Raise your hand to the sun!")
 
         gameTimer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common)
             .autoconnect()
@@ -162,6 +178,11 @@ final class GameEngine {
         lastTickTime = now
         elapsedTime = now.timeIntervalSince(startTime)
 
+        if let showTime = phasePromptShowTime, now.timeIntervalSince(showTime) > 2.0 {
+            phasePrompt = nil
+            phasePromptShowTime = nil
+        }
+
         guard currentRepIndex < reps.count else {
             finishSession()
             return
@@ -169,24 +190,35 @@ final class GameEngine {
 
         let rep = reps[currentRepIndex]
 
-        if elapsedTime < rep.activeEndTime && elapsedTime >= rep.activeStartTime {
+        if elapsedTime >= rep.activeStartTime && elapsedTime < rep.activeEndTime {
             if currentPhase != .active {
+                restBonusMultiplier = 1.0 + 0.3 * waterLevel
                 currentPhase = .active
                 currentRepGrowth = 0.0
+                growthSpurtAccumulator = 0.0
                 audio.playDayTransition()
+                showPhasePrompt(currentRepIndex == 0
+                    ? "Raise your hand to the sun!"
+                    : "Reach for the sun!")
             }
             phaseTimeRemaining = rep.activeEndTime - elapsedTime
             updateGrowth(dt: dt)
         } else if elapsedTime >= rep.restStartTime && elapsedTime < rep.restEndTime {
             if currentPhase != .rest {
                 currentPhase = .rest
+                isInSunlightZone = false
                 currentRepRestAccumulator = 0
                 currentRepRestTotal = 0
+                waterLevel = 0.0
                 audio.playNightTransition()
+                showPhasePrompt(currentRepIndex == 0
+                    ? "Lower your hand \u{2014} let it rain!"
+                    : "Rest & water your tree")
             }
             phaseTimeRemaining = rep.restEndTime - elapsedTime
             updateRest(dt: dt)
         } else if elapsedTime >= rep.restEndTime {
+            applyRestBonus()
             finishCurrentRep()
             currentRepIndex += 1
             if currentRepIndex >= reps.count {
@@ -197,20 +229,29 @@ final class GameEngine {
 
     private func updateGrowth(dt: TimeInterval) {
         let height = currentArmHeight
-        guard height >= config.sunlightThreshold else { return }
+        isInSunlightZone = height >= config.sunlightThreshold
+        guard isInSunlightZone else { return }
 
         let growthRate = (height - config.sunlightThreshold) / (1.0 - config.sunlightThreshold)
         let maxGrowthPerRep = 1.0 / Double(config.repCount)
-        let increment = growthRate * maxGrowthPerRep * (dt / config.activeDuration)
+        let increment = growthRate * maxGrowthPerRep * (dt / config.activeDuration) * restBonusMultiplier
 
         currentRepGrowth += increment
         scoreTracker.addGrowth(increment)
         treeGrowth = scoreTracker.growthPercentage
 
+        growthSpurtAccumulator += increment
+        let spurtThreshold = 1.0 / (Double(config.repCount) * 4.0)
+        if growthSpurtAccumulator >= spurtThreshold {
+            growthSpurtAccumulator -= spurtThreshold
+            growthSpurtCount += 1
+            audio.playGrowth()
+        }
+
         let milestone = Int(treeGrowth * 10)
         if milestone > lastGrowthMilestone {
             lastGrowthMilestone = milestone
-            audio.playGrowth()
+            audio.playMilestone()
         }
     }
 
@@ -219,12 +260,28 @@ final class GameEngine {
         if currentArmHeight <= config.restThreshold {
             isRestingProperly = true
             currentRepRestAccumulator += dt
+            waterLevel = min(1.0, currentRepRestAccumulator / config.restDuration)
         } else {
             isRestingProperly = false
             let penalty = 0.02 * dt
             scoreTracker.penalizeHealth(penalty)
             treeHealth = scoreTracker.treeHealth
         }
+    }
+
+    private func applyRestBonus() {
+        guard currentRepRestTotal > 0 else { return }
+        let compliance = currentRepRestAccumulator / currentRepRestTotal
+        if compliance > 0.7 {
+            let healthRestore = 0.05 * compliance
+            scoreTracker.restoreHealth(healthRestore)
+            treeHealth = scoreTracker.treeHealth
+        }
+    }
+
+    private func showPhasePrompt(_ text: String) {
+        phasePrompt = text
+        phasePromptShowTime = Date()
     }
 
     private func finishCurrentRep() {
@@ -245,9 +302,11 @@ final class GameEngine {
     private func finishSession() {
         guard !isFinished else { return }
         if currentRepIndex < reps.count && !reps[currentRepIndex].isComplete {
+            applyRestBonus()
             finishCurrentRep()
         }
         currentPhase = .complete
+        isInSunlightZone = false
         audio.playTreeComplete()
         stop()
         isFinished = true
