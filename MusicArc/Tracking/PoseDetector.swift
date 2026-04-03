@@ -14,12 +14,27 @@ final class PoseDetector: PoseProvider {
     var captureSession: AVCaptureSession { cameraManager.session }
 
     let cameraManager = CameraManager()
+    let trackingArm: TrackingArm
 
     private let armHeightSubject = PassthroughSubject<Double, Never>()
     private let armPoseSubject = PassthroughSubject<ArmPose, Never>()
     private var cancellables = Set<AnyCancellable>()
     private let request = VNDetectHumanBodyPoseRequest()
     private let minConfidence: Float = 0.3
+
+    private var shoulderKey: VNHumanBodyPoseObservation.JointName {
+        trackingArm == .right ? .rightShoulder : .leftShoulder
+    }
+    private var elbowKey: VNHumanBodyPoseObservation.JointName {
+        trackingArm == .right ? .rightElbow : .leftElbow
+    }
+    private var wristKey: VNHumanBodyPoseObservation.JointName {
+        trackingArm == .right ? .rightWrist : .leftWrist
+    }
+
+    init(trackingArm: TrackingArm = .right) {
+        self.trackingArm = trackingArm
+    }
 
     func start() {
         cameraManager.configure()
@@ -53,9 +68,9 @@ final class PoseDetector: PoseProvider {
             return
         }
 
-        let shoulder = try? observation.recognizedPoint(.rightShoulder)
-        let elbow = try? observation.recognizedPoint(.rightElbow)
-        let wrist = try? observation.recognizedPoint(.rightWrist)
+        let shoulder = try? observation.recognizedPoint(shoulderKey)
+        let elbow = try? observation.recognizedPoint(elbowKey)
+        let wrist = try? observation.recognizedPoint(wristKey)
 
         let shoulderPt = (shoulder?.confidence ?? 0) > minConfidence ? shoulder?.location : nil
         let elbowPt = (elbow?.confidence ?? 0) > minConfidence ? elbow?.location : nil

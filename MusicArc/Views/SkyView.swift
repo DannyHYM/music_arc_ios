@@ -6,6 +6,8 @@ struct SkyView: View {
     let isRestingProperly: Bool
     let isInSunlightZone: Bool
     let sunlightThreshold: Double
+    let restThreshold: Double
+    let waterLevel: Double
 
     private var isDay: Bool { phase == .active || phase == .countdown }
 
@@ -26,11 +28,13 @@ struct SkyView: View {
                     }
                 } else if phase == .rest {
                     nightElements(in: geo)
+                    restThresholdLine(in: geo)
+                    rainCloudView(in: geo)
                 }
             }
-            .animation(.easeInOut(duration: 1.0), value: isDay)
-            .animation(.easeInOut(duration: 0.5), value: isRestingProperly)
-            .animation(.easeOut(duration: 0.3), value: isInSunlightZone)
+            .animation(.easeInOut(duration: 0.25), value: isDay)
+            .animation(.easeInOut(duration: 0.3), value: isRestingProperly)
+            .animation(.easeOut(duration: 0.2), value: isInSunlightZone)
         }
     }
 
@@ -108,17 +112,17 @@ struct SkyView: View {
         let lineY = sunMinY - (sunMinY - sunMaxY) * sunlightThreshold
 
         return Canvas { context, size in
-            let glowRect = CGRect(x: 0, y: lineY - 12, width: w, height: 24)
-            context.fill(Path(glowRect), with: .color(Color.yellow.opacity(0.06)))
+            let glowRect = CGRect(x: 0, y: lineY - 20, width: w, height: 40)
+            context.fill(Path(glowRect), with: .color(Color.orange.opacity(0.15)))
 
             var dashPath = Path()
-            var x: CGFloat = 30
-            while x < w - 30 {
+            var x: CGFloat = 20
+            while x < w - 20 {
                 dashPath.move(to: CGPoint(x: x, y: lineY))
-                dashPath.addLine(to: CGPoint(x: min(x + 12, w - 30), y: lineY))
-                x += 24
+                dashPath.addLine(to: CGPoint(x: min(x + 16, w - 20), y: lineY))
+                x += 26
             }
-            context.stroke(dashPath, with: .color(Color.yellow.opacity(0.35)), lineWidth: 1.5)
+            context.stroke(dashPath, with: .color(Color.orange.opacity(0.85)), lineWidth: 2.5)
         }
         .allowsHitTesting(false)
     }
@@ -201,6 +205,111 @@ struct SkyView: View {
             }
         }
     }
+
+    // MARK: - Rest Threshold Line
+
+    private func restThresholdLine(in geo: GeometryProxy) -> some View {
+        let h = geo.size.height
+        let w = geo.size.width
+        let cloudMinY = h * 0.7
+        let cloudMaxY = h * 0.12
+        let lineY = cloudMinY - (cloudMinY - cloudMaxY) * restThreshold
+
+        return Canvas { context, size in
+            let glowRect = CGRect(x: 0, y: lineY - 16, width: w, height: 32)
+            context.fill(Path(glowRect), with: .color(Color.cyan.opacity(0.1)))
+
+            var dashPath = Path()
+            var x: CGFloat = 20
+            while x < w - 20 {
+                dashPath.move(to: CGPoint(x: x, y: lineY))
+                dashPath.addLine(to: CGPoint(x: min(x + 16, w - 20), y: lineY))
+                x += 26
+            }
+            context.stroke(dashPath, with: .color(Color.cyan.opacity(0.7)), lineWidth: 2.5)
+        }
+        .allowsHitTesting(false)
+    }
+
+    // MARK: - Rain Cloud
+
+    private func rainCloudView(in geo: GeometryProxy) -> some View {
+        let cloudMinY = geo.size.height * 0.7
+        let cloudMaxY = geo.size.height * 0.12
+        let cloudY = cloudMinY - (cloudMinY - cloudMaxY) * handHeight
+        let cloudX = geo.size.width * 0.2
+
+        let rainIntensity = isRestingProperly
+            ? min(1.0, (restThreshold - handHeight) / restThreshold)
+            : 0.0
+
+        return ZStack {
+            if isRestingProperly {
+                RainBeamShape(cloudX: cloudX, cloudY: cloudY)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.cyan.opacity(0.15 * rainIntensity),
+                                Color.blue.opacity(0.06 * rainIntensity),
+                                Color.clear
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .allowsHitTesting(false)
+            }
+
+            cloudShape(intensity: rainIntensity)
+                .position(x: cloudX, y: cloudY)
+                .animation(.easeOut(duration: 0.15), value: handHeight)
+        }
+    }
+
+    private func cloudShape(intensity: Double) -> some View {
+        let baseColor = isRestingProperly
+            ? Color(red: 0.7, green: 0.85, blue: 1.0)
+            : Color(red: 0.5, green: 0.35, blue: 0.35)
+        let glowOpacity = isRestingProperly ? 0.3 + 0.2 * intensity : 0.1
+
+        return ZStack {
+            Ellipse()
+                .fill(baseColor.opacity(glowOpacity * 0.5))
+                .frame(width: 110, height: 55)
+
+            Ellipse()
+                .fill(baseColor.opacity(glowOpacity))
+                .frame(width: 80, height: 40)
+
+            ZStack {
+                Ellipse()
+                    .fill(baseColor.opacity(0.6 + 0.3 * intensity))
+                    .frame(width: 60, height: 30)
+                Ellipse()
+                    .fill(baseColor.opacity(0.5 + 0.3 * intensity))
+                    .frame(width: 40, height: 24)
+                    .offset(x: -16, y: 3)
+                Ellipse()
+                    .fill(baseColor.opacity(0.5 + 0.3 * intensity))
+                    .frame(width: 36, height: 22)
+                    .offset(x: 18, y: 4)
+                Ellipse()
+                    .fill(baseColor.opacity(0.4 + 0.2 * intensity))
+                    .frame(width: 30, height: 18)
+                    .offset(x: 8, y: -8)
+            }
+
+            if isRestingProperly && intensity > 0.1 {
+                ForEach(0..<3, id: \.self) { i in
+                    let dropX: CGFloat = CGFloat(i - 1) * 12
+                    Capsule()
+                        .fill(Color.cyan.opacity(0.5 * intensity))
+                        .frame(width: 2.5, height: 8)
+                        .offset(x: dropX, y: 22)
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Sun Beam Shape
@@ -220,6 +329,29 @@ private struct SunBeamShape: Shape {
         path.addLine(to: CGPoint(x: treeX - bottomHalfWidth, y: groundY))
         path.addLine(to: CGPoint(x: treeX + bottomHalfWidth, y: groundY))
         path.addLine(to: CGPoint(x: sunX + topHalfWidth, y: sunY + 30))
+        path.closeSubpath()
+
+        return path
+    }
+}
+
+// MARK: - Rain Beam Shape
+
+private struct RainBeamShape: Shape {
+    let cloudX: CGFloat
+    let cloudY: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let topHalfWidth: CGFloat = 20
+        let treeX = rect.width * 0.5
+        let bottomHalfWidth = rect.width * 0.25
+        let groundY = rect.height * 0.85
+
+        path.move(to: CGPoint(x: cloudX - topHalfWidth, y: cloudY + 20))
+        path.addLine(to: CGPoint(x: treeX - bottomHalfWidth, y: groundY))
+        path.addLine(to: CGPoint(x: treeX + bottomHalfWidth, y: groundY))
+        path.addLine(to: CGPoint(x: cloudX + topHalfWidth, y: cloudY + 20))
         path.closeSubpath()
 
         return path
@@ -266,7 +398,7 @@ struct GroundView: View {
                         .frame(height: 8)
                 }
             }
-            .animation(.easeInOut(duration: 1.0), value: isDay)
+            .animation(.easeInOut(duration: 0.25), value: isDay)
         }
     }
 

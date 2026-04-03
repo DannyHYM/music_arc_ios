@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @Binding var navigationPath: NavigationPath
     @State private var inputMode: InputMode = .touch
+    @State private var trackingArm: TrackingArm = .right
     @State private var repCount: Int = 8
     @State private var activeDuration: Double = 4.0
     @State private var restDuration: Double = 3.0
@@ -12,7 +13,8 @@ struct HomeView: View {
             repCount: repCount,
             activeDuration: activeDuration,
             restDuration: restDuration,
-            inputMode: inputMode
+            inputMode: inputMode,
+            trackingArm: trackingArm
         )
         return config.totalSessionSeconds
     }
@@ -39,6 +41,10 @@ struct HomeView: View {
                     sessionConfigSection
 
                     inputModeSection
+
+                    if inputMode == .camera {
+                        trackingArmSection
+                    }
 
                     startButton
 
@@ -93,7 +99,7 @@ struct HomeView: View {
                     value: String(format: "%.0fs", activeDuration),
                     icon: "sun.max.fill"
                 ) {
-                    Stepper("", value: $activeDuration, in: 2...8, step: 1)
+                    Stepper("", value: $activeDuration, in: 2...20, step: 1)
                         .labelsHidden()
                 }
 
@@ -102,7 +108,7 @@ struct HomeView: View {
                     value: String(format: "%.0fs", restDuration),
                     icon: "moon.fill"
                 ) {
-                    Stepper("", value: $restDuration, in: 2...6, step: 1)
+                    Stepper("", value: $restDuration, in: 2...30, step: 1)
                         .labelsHidden()
                 }
 
@@ -165,6 +171,29 @@ struct HomeView: View {
         }
     }
 
+    // MARK: - Tracking Arm
+
+    private var trackingArmSection: some View {
+        VStack(spacing: 10) {
+            Text("Tracking Arm")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+
+            Picker("Tracking Arm", selection: $trackingArm) {
+                ForEach(TrackingArm.allCases, id: \.self) { arm in
+                    Label(arm.rawValue, systemImage: arm == .left ? "hand.raised.fill" : "hand.raised.fill")
+                        .tag(arm)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Text("Which arm will you raise during the exercise?")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+    }
+
     // MARK: - Buttons
 
     private var startButton: some View {
@@ -179,7 +208,8 @@ struct HomeView: View {
                 repCount: repCount,
                 activeDuration: activeDuration,
                 restDuration: restDuration,
-                inputMode: effectiveMode
+                inputMode: effectiveMode,
+                trackingArm: trackingArm
             )
             navigationPath.append(AppRoute.calibration(config))
         } label: {
@@ -205,7 +235,7 @@ struct HomeView: View {
     private var inputModeDescription: String {
         switch inputMode {
         case .camera:
-            return "Uses the rear camera + body pose tracking"
+            return "Uses the front camera + body pose tracking"
         case .touch:
             return "Drag up/down on screen to control arm height"
         case .demo:

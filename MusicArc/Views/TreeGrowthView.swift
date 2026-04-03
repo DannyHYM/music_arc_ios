@@ -25,7 +25,9 @@ struct TreeGrowthView: View {
                     handHeight: handHeight,
                     isRestingProperly: isRestingProperly,
                     isInSunlightZone: isInSunlightZone,
-                    sunlightThreshold: sunlightThreshold
+                    sunlightThreshold: sunlightThreshold,
+                    restThreshold: restThreshold,
+                    waterLevel: waterLevel
                 )
 
                 GroundView(phase: phase)
@@ -38,8 +40,8 @@ struct TreeGrowthView: View {
 
                 if phase == .rest {
                     WaterLevelView(waterLevel: waterLevel)
-                        .frame(width: w * 0.35, height: 14)
-                        .position(x: w * 0.5, y: h * 0.91)
+                        .frame(width: w * 0.6, height: 28)
+                        .position(x: w * 0.5, y: h * 0.95)
                         .transition(.opacity)
                 }
 
@@ -73,19 +75,19 @@ struct WaterLevelView: View {
     let waterLevel: Double
 
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 10) {
             Image(systemName: "drop.fill")
-                .font(.system(size: 8))
-                .foregroundStyle(.cyan.opacity(0.8))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(.cyan.opacity(0.9))
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.white.opacity(0.12))
+                        .fill(Color.white.opacity(0.15))
                     Capsule()
                         .fill(
                             LinearGradient(
-                                colors: [.cyan.opacity(0.5), .blue.opacity(0.6)],
+                                colors: [.cyan.opacity(0.6), .blue.opacity(0.7)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

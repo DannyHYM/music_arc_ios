@@ -6,6 +6,11 @@ enum InputMode: String, Hashable, CaseIterable {
     case demo = "Auto Demo"
 }
 
+enum TrackingArm: String, Hashable, CaseIterable {
+    case left = "Left"
+    case right = "Right"
+}
+
 struct GameConfig: Hashable {
     var repCount: Int = 8
     var activeDuration: TimeInterval = 4.0
@@ -13,6 +18,7 @@ struct GameConfig: Hashable {
     var sunlightThreshold: Double = 0.7
     var restThreshold: Double = 0.3
     var inputMode: InputMode = .touch
+    var trackingArm: TrackingArm = .right
 
     var isDemoMode: Bool { inputMode == .demo }
     var isTouchMode: Bool { inputMode == .touch }

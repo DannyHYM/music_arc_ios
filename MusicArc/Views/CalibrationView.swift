@@ -113,16 +113,29 @@ struct CalibrationView: View {
                 }
 
                 if phase == .done {
-                    Button {
-                        finishCalibration()
-                    } label: {
-                        Label("Start Growing", systemImage: "leaf.fill")
-                            .font(.title3.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
+                    VStack(spacing: 12) {
+                        Button {
+                            finishCalibration()
+                        } label: {
+                            Label("Start Growing", systemImage: "leaf.fill")
+                                .font(.title3.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+
+                        Button {
+                            restartCalibration()
+                        } label: {
+                            Label("Re-calibrate", systemImage: "arrow.counterclockwise")
+                                .font(.body.weight(.medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.white)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
                     .padding(.horizontal, 40)
                 }
 
@@ -227,7 +240,7 @@ struct CalibrationView: View {
     // MARK: - Pose Detection
 
     private func setupPoseDetector() {
-        let detector = PoseDetector()
+        let detector = PoseDetector(trackingArm: config.trackingArm)
         self.poseDetector = detector
 
         heightCancellable = detector.armHeightPublisher
@@ -253,6 +266,14 @@ struct CalibrationView: View {
     // MARK: - Calibration Flow
 
     private func startCalibration() {
+        beginRaisePhase()
+    }
+
+    private func restartCalibration() {
+        phaseTimer?.cancel()
+        recordedMin = 1.0
+        recordedMax = 0.0
+        progress = 0
         beginRaisePhase()
     }
 

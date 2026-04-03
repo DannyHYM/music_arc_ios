@@ -8,6 +8,7 @@ struct GameView: View {
 
     @State private var engine: GameEngine?
     @State private var hasStarted = false
+    @State private var showQuitConfirmation = false
 
     var body: some View {
         ZStack {
@@ -29,14 +30,24 @@ struct GameView: View {
                 .ignoresSafeArea()
                 .opacity(engine.isInCountdown ? 0.4 : 1.0)
 
-                VStack {
-                    hudBar(engine: engine)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
+                VStack(spacing: 8) {
+                    HStack {
+                        repCounter(engine: engine)
+                        Spacer()
+                        if !engine.isInCountdown && !engine.isFinished {
+                            pauseButton(engine: engine)
+                        }
+                    }
+                    .padding(.top, 12)
+                    .padding(.horizontal, 16)
+
+                    if engine.currentPhase == .active || engine.currentPhase == .rest {
+                        phaseTimerDisplay(engine: engine)
+                    }
 
                     Spacer()
 
-                    if config.isTouchMode && !engine.isInCountdown && !engine.isFinished {
+                    if config.isTouchMode && !engine.isInCountdown && !engine.isFinished && !engine.isPaused {
                         Text("Drag up & down to move")
                             .font(.caption2)
                             .foregroundStyle(.white.opacity(0.5))
@@ -48,11 +59,11 @@ struct GameView: View {
                 }
                 .opacity(engine.isInCountdown ? 0.4 : 1.0)
 
-                if config.isTouchMode && !engine.isInCountdown && !engine.isFinished {
+                if config.isTouchMode && !engine.isInCountdown && !engine.isFinished && !engine.isPaused {
                     touchCaptureLayer(engine: engine)
                 }
 
-                if !engine.isInCountdown && !engine.isFinished {
+                if !engine.isInCountdown && !engine.isFinished && !engine.isPaused {
                     PhasePromptOverlay(prompt: engine.phasePrompt)
                         .offset(y: -40)
                 }
@@ -61,12 +72,25 @@ struct GameView: View {
                     countdownOverlay(engine: engine)
                 }
 
+                if engine.isPaused {
+                    pauseOverlay(engine: engine)
+                }
+
                 if engine.isFinished {
                     finishedOverlay(engine: engine)
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
+        .alert("Leave Session?", isPresented: $showQuitConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Leave", role: .destructive) {
+                engine?.stop()
+                navigationPath.removeLast(navigationPath.count)
+            }
+        } message: {
+            Text("This session's progress will not be saved. You will lose all data from this session.")
+        }
         .onAppear {
             guard !hasStarted else { return }
             hasStarted = true
@@ -107,77 +131,33 @@ struct GameView: View {
         }
     }
 
+    // MARK: - Pause Button
+
+    private func pauseButton(engine: GameEngine) -> some View {
+        Button {
+            engine.pause()
+        } label: {
+            Image(systemName: "pause.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .background(.ultraThinMaterial.opacity(0.6), in: Circle())
+        }
+    }
+
     // MARK: - HUD
 
-    private func hudBar(engine: GameEngine) -> some View {
-        HStack(spacing: 0) {
-            phaseLabel(engine: engine)
-
-            Spacer()
-
-            repCounter(engine: engine)
-
-            Spacer()
-
-            growthDisplay(engine: engine)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(.ultraThinMaterial.opacity(0.6), in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    private func phaseLabel(engine: GameEngine) -> some View {
-        let icon: String
-        let label: String
-        let color: Color
-
-        switch engine.currentPhase {
-        case .active:
-            icon = "sun.max.fill"
-            label = "Grow!"
-            color = .yellow
-        case .rest:
-            icon = "moon.fill"
-            label = "Rest..."
-            color = .cyan
-        case .countdown:
-            icon = "clock.fill"
-            label = "Ready"
-            color = .white
-        case .complete:
-            icon = "checkmark.seal.fill"
-            label = "Done!"
-            color = .green
-        }
-
-        return HStack(spacing: 6) {
-            Image(systemName: icon)
-                .foregroundStyle(color)
-                .font(.system(size: 14))
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(label)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-
-                if engine.currentPhase == .active || engine.currentPhase == .rest {
-                    Text(String(format: "%.1fs", max(0, engine.phaseTimeRemaining)))
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-            }
-        }
-        .frame(minWidth: 80, alignment: .leading)
-    }
-
     private func repCounter(engine: GameEngine) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             ForEach(0..<config.repCount, id: \.self) { i in
                 Circle()
                     .fill(repDotColor(index: i, engine: engine))
-                    .frame(width: 7, height: 7)
+                    .frame(width: 8, height: 8)
             }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial.opacity(0.5), in: Capsule())
     }
 
     private func repDotColor(index: Int, engine: GameEngine) -> Color {
@@ -190,23 +170,46 @@ struct GameView: View {
         }
     }
 
-    private func growthDisplay(engine: GameEngine) -> some View {
-        HStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 2.5)
-                Circle()
-                    .trim(from: 0, to: engine.treeGrowth)
-                    .stroke(Color.green, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-            }
-            .frame(width: 24, height: 24)
+    private func phaseTimerDisplay(engine: GameEngine) -> some View {
+        let icon: String
+        let label: String
+        let color: Color
 
-            Text("\(Int(engine.treeGrowth * 100))%")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(.green)
+        switch engine.currentPhase {
+        case .active:
+            icon = "sun.max.fill"
+            label = "Grow!"
+            color = .yellow
+        case .rest:
+            icon = "moon.fill"
+            label = "Rest"
+            color = .cyan
+        default:
+            icon = "clock.fill"
+            label = ""
+            color = .white
         }
-        .frame(minWidth: 70, alignment: .trailing)
+
+        let seconds = Int(ceil(max(0, engine.phaseTimeRemaining)))
+
+        return VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 36, weight: .semibold))
+                    .foregroundStyle(color)
+
+                Text(label)
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+
+            Text("\(seconds)")
+                .font(.system(size: 80, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.2), value: seconds)
+        }
+        .shadow(color: .black.opacity(0.6), radius: 10, y: 3)
     }
 
     // MARK: - Overlays
@@ -250,6 +253,77 @@ struct GameView: View {
             .padding(.horizontal, 28)
             .padding(.vertical, 16)
             .background(.ultraThinMaterial.opacity(0.4), in: RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
+    private func pauseOverlay(engine: GameEngine) -> some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Text("Paused")
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.bottom, 8)
+
+                glassmorphicButton(
+                    title: "Continue",
+                    icon: "play.fill",
+                    tint: .green
+                ) {
+                    engine.resume()
+                }
+
+                glassmorphicButton(
+                    title: "Restart",
+                    icon: "arrow.counterclockwise",
+                    tint: .yellow
+                ) {
+                    engine.stop()
+                    let e = GameEngine(config: config, calibration: calibration)
+                    self.engine = e
+                    e.start()
+                }
+
+                glassmorphicButton(
+                    title: "Go Home",
+                    icon: "house.fill",
+                    tint: .red
+                ) {
+                    showQuitConfirmation = true
+                }
+            }
+        }
+    }
+
+    private func glassmorphicButton(
+        title: String,
+        icon: String,
+        tint: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(tint)
+                    .frame(width: 24)
+
+                Text(title)
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+            .frame(width: 220, height: 54)
+            .background {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(tint.opacity(0.4), lineWidth: 1)
+                    )
+            }
         }
     }
 

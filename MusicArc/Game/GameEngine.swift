@@ -16,6 +16,7 @@ final class GameEngine {
     var elapsedTime: TimeInterval = 0
     var isRunning = false
     var isFinished = false
+    var isPaused = false
     var countdownValue: Int = 3
     var isInCountdown = true
 
@@ -45,6 +46,7 @@ final class GameEngine {
     private var countdownTimer: AnyCancellable?
 
     private var lastTickTime: Date?
+    private var pausedAt: Date?
     private var currentRepRestAccumulator: TimeInterval = 0
     private var currentRepRestTotal: TimeInterval = 0
     private var lastGrowthMilestone: Int = 0
@@ -118,7 +120,7 @@ final class GameEngine {
             self.touchProvider = tp
             provider = tp
         case .camera:
-            provider = PoseDetector()
+            provider = PoseDetector(trackingArm: config.trackingArm)
         }
         self.poseProvider = provider
 
@@ -135,13 +137,44 @@ final class GameEngine {
 
         currentPhase = .active
         audio.playDayTransition()
-        showPhasePrompt("Raise your hand to the sun!")
+        showPhasePrompt("Raise the sun over the line!")
 
         gameTimer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.tick()
             }
+    }
+
+    func pause() {
+        guard isRunning, !isPaused, !isFinished else { return }
+        isPaused = true
+        pausedAt = Date()
+        gameTimer?.cancel()
+        gameTimer = nil
+        countdownTimer?.cancel()
+        countdownTimer = nil
+    }
+
+    func resume() {
+        guard isPaused, !isFinished else { return }
+        if let pausedAt, let startTime {
+            let pauseDuration = Date().timeIntervalSince(pausedAt)
+            self.startTime = startTime.addingTimeInterval(pauseDuration)
+            self.lastTickTime = Date()
+        }
+        pausedAt = nil
+        isPaused = false
+
+        if isInCountdown {
+            startCountdown()
+        } else {
+            gameTimer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common)
+                .autoconnect()
+                .sink { [weak self] _ in
+                    self?.tick()
+                }
+        }
     }
 
     func stop() {
@@ -154,6 +187,7 @@ final class GameEngine {
         poseProvider?.stop()
         poseProvider = nil
         isRunning = false
+        isPaused = false
     }
 
     func buildResult() -> GameResult {
@@ -198,8 +232,8 @@ final class GameEngine {
                 growthSpurtAccumulator = 0.0
                 audio.playDayTransition()
                 showPhasePrompt(currentRepIndex == 0
-                    ? "Raise your hand to the sun!"
-                    : "Reach for the sun!")
+                    ? "Raise the sun over the line!"
+                    : "Raise the sun over the line!")
             }
             phaseTimeRemaining = rep.activeEndTime - elapsedTime
             updateGrowth(dt: dt)
