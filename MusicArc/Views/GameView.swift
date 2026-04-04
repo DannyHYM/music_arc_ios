@@ -31,11 +31,14 @@ struct GameView: View {
                 .opacity(engine.isInCountdown ? 0.4 : 1.0)
 
                 VStack(spacing: 8) {
-                    HStack {
+                    ZStack {
                         repCounter(engine: engine)
-                        Spacer()
+
                         if !engine.isInCountdown && !engine.isFinished {
-                            pauseButton(engine: engine)
+                            HStack {
+                                pauseButton(engine: engine)
+                                Spacer()
+                            }
                         }
                     }
                     .padding(.top, 12)
@@ -148,15 +151,15 @@ struct GameView: View {
     // MARK: - HUD
 
     private func repCounter(engine: GameEngine) -> some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 6) {
             ForEach(0..<config.repCount, id: \.self) { i in
                 Circle()
                     .fill(repDotColor(index: i, engine: engine))
-                    .frame(width: 8, height: 8)
+                    .frame(width: 10, height: 10)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
         .background(.ultraThinMaterial.opacity(0.5), in: Capsule())
     }
 
