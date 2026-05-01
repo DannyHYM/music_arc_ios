@@ -3,7 +3,7 @@ import Combine
 
 final class CameraManager: NSObject, ObservableObject {
     let session = AVCaptureSession()
-    let framePublisher = PassthroughSubject<CMSampleBuffer, Never>()
+    let framePublisher = PassthroughSubject<CVPixelBuffer, Never>()
 
     private let sessionQueue = DispatchQueue(label: "com.musicarc.camera")
     private var isConfigured = false
@@ -70,6 +70,7 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
         didOutput sampleBuffer: CMSampleBuffer,
         from connection: AVCaptureConnection
     ) {
-        framePublisher.send(sampleBuffer)
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        framePublisher.send(pixelBuffer)
     }
 }

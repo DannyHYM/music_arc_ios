@@ -139,8 +139,9 @@ struct ParticleOverlay: View {
     private func drawSparkles(context: GraphicsContext, size: CGSize, time: TimeInterval) {
         let centerX = size.width * 0.5
         let treeTop = size.height * (0.25 - 0.15 * treeGrowth)
-        let intensity = min(1.0, (handHeight - sunlightThreshold) / (1.0 - sunlightThreshold))
-        let sparkleCount = Int(4 + 8 * intensity)
+        let sunRange = 1.0 - sunlightThreshold
+        let intensity = sunRange > 0.001 ? min(1.0, (handHeight - sunlightThreshold) / sunRange) : 1.0
+        let sparkleCount = intensity.isFinite ? Int(4 + 8 * intensity) : 4
 
         for i in 0..<sparkleCount {
             let seed = Double(i) * 97.3

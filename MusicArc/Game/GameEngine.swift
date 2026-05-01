@@ -266,8 +266,9 @@ final class GameEngine {
         isInSunlightZone = height >= config.sunlightThreshold
         guard isInSunlightZone else { return }
 
-        let growthRate = (height - config.sunlightThreshold) / (1.0 - config.sunlightThreshold)
-        let maxGrowthPerRep = 1.0 / Double(config.repCount)
+        let thresholdRange = 1.0 - config.sunlightThreshold
+        let growthRate = thresholdRange > 0.001 ? (height - config.sunlightThreshold) / thresholdRange : 1.0
+        let maxGrowthPerRep = 1.0 / Double(max(1, config.repCount))
         let increment = growthRate * maxGrowthPerRep * (dt / config.activeDuration) * restBonusMultiplier
 
         currentRepGrowth += increment
@@ -275,14 +276,14 @@ final class GameEngine {
         treeGrowth = scoreTracker.growthPercentage
 
         growthSpurtAccumulator += increment
-        let spurtThreshold = 1.0 / (Double(config.repCount) * 4.0)
+        let spurtThreshold = 1.0 / (Double(max(1, config.repCount)) * 4.0)
         if growthSpurtAccumulator >= spurtThreshold {
             growthSpurtAccumulator -= spurtThreshold
             growthSpurtCount += 1
             audio.playGrowth()
         }
 
-        let milestone = Int(treeGrowth * 10)
+        let milestone = treeGrowth.isFinite ? Int(treeGrowth * 10) : 0
         if milestone > lastGrowthMilestone {
             lastGrowthMilestone = milestone
             audio.playMilestone()

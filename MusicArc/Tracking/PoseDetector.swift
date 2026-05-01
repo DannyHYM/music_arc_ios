@@ -41,8 +41,8 @@ final class PoseDetector: PoseProvider {
 
         cameraManager.framePublisher
             .receive(on: DispatchQueue(label: "com.musicarc.pose", qos: .userInteractive))
-            .sink { [weak self] buffer in
-                self?.processFrame(buffer)
+            .sink { [weak self] pixelBuffer in
+                self?.processFrame(pixelBuffer)
             }
             .store(in: &cancellables)
 
@@ -54,9 +54,7 @@ final class PoseDetector: PoseProvider {
         cameraManager.stopRunning()
     }
 
-    private func processFrame(_ sampleBuffer: CMSampleBuffer) {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-
+    private func processFrame(_ pixelBuffer: CVPixelBuffer) {
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
         try? handler.perform([request])
 

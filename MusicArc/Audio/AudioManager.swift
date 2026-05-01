@@ -69,7 +69,7 @@ final class AudioManager {
         guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
         buffer.frameLength = frameCount
 
-        let data = buffer.floatChannelData![0]
+        guard let data = buffer.floatChannelData?[0] else { return }
         let amplitude = volume / Float(frequencies.count)
 
         for i in 0..<Int(frameCount) {

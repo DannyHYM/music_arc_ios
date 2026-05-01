@@ -83,8 +83,9 @@ struct SkyView: View {
         let sunMaxY = geo.size.height * 0.12
         let sunY = sunMinY - (sunMinY - sunMaxY) * handHeight
         let sunX = geo.size.width * 0.8
-        let beamIntensity = isInSunlightZone
-            ? min(1.0, (handHeight - sunlightThreshold) / (1.0 - sunlightThreshold))
+        let sunRange = 1.0 - sunlightThreshold
+        let beamIntensity = isInSunlightZone && sunRange > 0.001
+            ? min(1.0, (handHeight - sunlightThreshold) / sunRange)
             : 0.0
 
         return SunBeamShape(sunX: sunX, sunY: sunY)
@@ -239,7 +240,7 @@ struct SkyView: View {
         let cloudY = cloudMinY - (cloudMinY - cloudMaxY) * handHeight
         let cloudX = geo.size.width * 0.2
 
-        let rainIntensity = isRestingProperly
+        let rainIntensity = isRestingProperly && restThreshold > 0.001
             ? min(1.0, (restThreshold - handHeight) / restThreshold)
             : 0.0
 
