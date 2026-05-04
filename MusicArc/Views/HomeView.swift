@@ -21,22 +21,12 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.85, green: 0.95, blue: 0.85),
-                    Color(red: 0.65, green: 0.85, blue: 0.65),
-                    Color(red: 0.4, green: 0.65, blue: 0.35)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            AmbientBlobBackground()
 
             ScrollView {
-                VStack(spacing: 24) {
-                    Spacer(minLength: 20)
-
+                VStack(spacing: 20) {
                     headerSection
+                        .padding(.top, 48)
 
                     sessionConfigSection
 
@@ -46,13 +36,15 @@ struct HomeView: View {
                         trackingArmSection
                     }
 
+                    treePreviewSection
+
                     startButton
 
                     historyButton
 
-                    Spacer(minLength: 20)
+                    Spacer(minLength: 16)
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 28)
             }
         }
         .navigationBarHidden(true)
@@ -61,13 +53,9 @@ struct HomeView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "tree.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(Color(red: 0.25, green: 0.55, blue: 0.25))
-
-            Text("MusicArc Forest")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
+        VStack(spacing: 6) {
+            Text("MusicArc")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
                 .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
 
             Text("Grow your tree through movement")
@@ -79,7 +67,7 @@ struct HomeView: View {
     // MARK: - Session Config
 
     private var sessionConfigSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Text("Session Setup")
                 .font(.headline)
                 .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
@@ -191,6 +179,36 @@ struct HomeView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+        }
+    }
+
+    // MARK: - Tree Preview
+
+    private var treePreviewSection: some View {
+        VStack(spacing: 10) {
+            Text("View Animation")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+
+            HStack(spacing: 12) {
+                ForEach(TreeSpecies.allCases, id: \.self) { species in
+                    Button {
+                        navigationPath.append(AppRoute.treePreview(species))
+                    } label: {
+                        VStack(spacing: 8) {
+                            TreeView(growth: 0.85, health: 1.0, species: species)
+                                .frame(width: 50, height: 60)
+                                .allowsHitTesting(false)
+                            Text(species.displayName)
+                                .font(.caption.weight(.medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                    .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
+                }
+            }
         }
     }
 

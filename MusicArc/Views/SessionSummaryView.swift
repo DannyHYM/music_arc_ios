@@ -67,7 +67,7 @@ struct SessionSummaryView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
 
-            TreeView(growth: result.treeGrowth, health: result.treeHealth)
+            TreeView(growth: result.treeGrowth, health: result.treeHealth, species: result.treeSpecies)
                 .padding(20)
         }
         .frame(height: 220)
@@ -170,7 +170,8 @@ struct SessionSummaryView: View {
             treeGrowth: result.treeGrowth,
             treeHealth: result.treeHealth,
             avgRestCompliance: result.avgRestCompliance,
-            isDemoMode: result.isDemoMode
+            isDemoMode: result.isDemoMode,
+            treeSpecies: result.treeSpecies
         )
         modelContext.insert(session)
         try? modelContext.save()
@@ -248,7 +249,8 @@ struct DetailRow: View {
                 treeGrowth: 0.85,
                 treeHealth: 0.9,
                 avgRestCompliance: 0.88,
-                inputMode: .touch
+                inputMode: .touch,
+                treeSpecies: .oak
             ),
             navigationPath: .constant(NavigationPath())
         )

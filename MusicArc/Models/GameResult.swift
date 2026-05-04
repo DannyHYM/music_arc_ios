@@ -9,6 +9,7 @@ struct GameResult: Hashable {
     let treeHealth: Double
     let avgRestCompliance: Double
     let inputMode: InputMode
+    let treeSpecies: TreeSpecies
 
     var isDemoMode: Bool { inputMode == .demo }
 

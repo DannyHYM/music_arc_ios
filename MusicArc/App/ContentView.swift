@@ -20,6 +20,8 @@ struct ContentView: View {
                         SessionSummaryView(result: result, navigationPath: $navigationPath)
                     case .history:
                         SessionHistoryView()
+                    case .treePreview(let species):
+                        TreePreviewView(species: species, navigationPath: $navigationPath)
                     }
                 }
         }
@@ -31,6 +33,7 @@ enum AppRoute: Hashable {
     case game(GameConfig, CalibrationData)
     case summary(GameResult)
     case history
+    case treePreview(TreeSpecies)
 }
 
 #Preview {

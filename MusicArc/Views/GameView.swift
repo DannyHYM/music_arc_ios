@@ -25,7 +25,8 @@ struct GameView: View {
                     restThreshold: config.restThreshold,
                     waterLevel: engine.waterLevel,
                     isInSunlightZone: engine.isInSunlightZone,
-                    growthSpurtCount: engine.growthSpurtCount
+                    growthSpurtCount: engine.growthSpurtCount,
+                    treeSpecies: engine.treeSpecies
                 )
                 .ignoresSafeArea()
                 .opacity(engine.isInCountdown ? 0.4 : 1.0)
@@ -98,6 +99,7 @@ struct GameView: View {
             guard !hasStarted else { return }
             hasStarted = true
             let e = GameEngine(config: config, calibration: calibration)
+            e.treeSpecies = .random()
             self.engine = e
             e.start()
         }
@@ -286,6 +288,7 @@ struct GameView: View {
                 ) {
                     engine.stop()
                     let e = GameEngine(config: config, calibration: calibration)
+                    e.treeSpecies = .random()
                     self.engine = e
                     e.start()
                 }

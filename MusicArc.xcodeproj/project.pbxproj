@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01A2B3C4D5E6F7A8B9C0D1E2 /* AmbientBlobBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F7A8B9C0D1E2F3 /* AmbientBlobBackground.swift */; };
 		0848D0C938BDD55D5218733D /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */; };
 		0E8FFDC71384A4254E000EF1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E2E6D38F1B7857AD869D81 /* GameView.swift */; };
 		10FAE5DF902D768901E85BF0 /* SessionSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */; };
@@ -33,6 +34,14 @@
 		F5A2A98FB8E64BCF50EDCF96 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77D4D2F8E2A37398DD980BA4 /* GameEngine.swift */; };
 		F6A7B8C9D0E1F2A3B4C5D6E7 /* Rep.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* Rep.swift */; };
 		FC78124884060B145C52B3F0 /* PoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03CF380A6C6325F215043D4 /* PoseProvider.swift */; };
+		AA1B2C3D4E5F6A7B8C9D0E1F /* TreeSpecies.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1C2D3E4F5A6B7C8D9E0F1A /* TreeSpecies.swift */; };
+		CC2D3E4F5A6B7C8D9E0F1A2B /* TreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD3E4F5A6B7C8D9E0F1A2B3C /* TreeRenderer.swift */; };
+		EE4F5A6B7C8D9E0F1A2B3C4D /* OakTreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5A6B7C8D9E0F1A2B3C4D5E /* OakTreeRenderer.swift */; };
+		11AA2B3C4D5E6F7A8B9C0D1E /* RoundTreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BB3C4D5E6F7A8B9C0D1E2F /* RoundTreeRenderer.swift */; };
+		55EE6F7A8B9C0D1E2F3A4B5C /* BushyTreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FF7A8B9C0D1E2F3A4B5C6D /* BushyTreeRenderer.swift */; };
+		77AA8B9C0D1E2F3A4B5C6D7E /* PineTreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BB9C0D1E2F3A4B5C6D7E8F /* PineTreeRenderer.swift */; };
+		99CC0D1E2F3A4B5C6D7E8F9A /* AcaciaTreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADD1E2F3A4B5C6D7E8F9A0B /* AcaciaTreeRenderer.swift */; };
+		33CC4D5E6F7A8B9C0D1E2F3A /* TreePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DD5E6F7A8B9C0D1E2F3A4B /* TreePreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +63,7 @@
 		80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSummaryView.swift; sourceTree = "<group>"; };
 		8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* Rep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rep.swift; sourceTree = "<group>"; };
+		A2B3C4D5E6F7A8B9C0D1E2F3 /* AmbientBlobBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientBlobBackground.swift; sourceTree = "<group>"; };
 		B2C3D4E5F6A7B8C9D0E1F2A3 /* RepScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepScheduler.swift; sourceTree = "<group>"; };
 		B5B05D51B04467F0C772BB44 /* GameResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameResult.swift; sourceTree = "<group>"; };
 		C3D4E5F6A7B8C9D0E1F2A3B4 /* TreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeView.swift; sourceTree = "<group>"; };
@@ -63,12 +73,21 @@
 		E03CF380A6C6325F215043D4 /* PoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseProvider.swift; sourceTree = "<group>"; };
 		E5F6A7B8C9D0E1F2A3B4C5D6 /* TreeGrowthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeGrowthView.swift; sourceTree = "<group>"; };
 		E7861D8AC0E53B94362C5191 /* TouchPoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPoseProvider.swift; sourceTree = "<group>"; };
+		BB1C2D3E4F5A6B7C8D9E0F1A /* TreeSpecies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeSpecies.swift; sourceTree = "<group>"; };
+		DD3E4F5A6B7C8D9E0F1A2B3C /* TreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeRenderer.swift; sourceTree = "<group>"; };
+		FF5A6B7C8D9E0F1A2B3C4D5E /* OakTreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OakTreeRenderer.swift; sourceTree = "<group>"; };
+		22BB3C4D5E6F7A8B9C0D1E2F /* RoundTreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundTreeRenderer.swift; sourceTree = "<group>"; };
+		66FF7A8B9C0D1E2F3A4B5C6D /* BushyTreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BushyTreeRenderer.swift; sourceTree = "<group>"; };
+		88BB9C0D1E2F3A4B5C6D7E8F /* PineTreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PineTreeRenderer.swift; sourceTree = "<group>"; };
+		AADD1E2F3A4B5C6D7E8F9A0B /* AcaciaTreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcaciaTreeRenderer.swift; sourceTree = "<group>"; };
+		44DD5E6F7A8B9C0D1E2F3A4B /* TreePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreePreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		25C276D9576F98F4D8D51E00 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A2B3C4D5E6F7A8B9C0D1E2F3 /* AmbientBlobBackground.swift */,
 				C8A3B48F251943BCF58980C5 /* CalibrationView.swift */,
 				6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */,
 				69E2E6D38F1B7857AD869D81 /* GameView.swift */,
@@ -76,6 +95,7 @@
 				2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */,
 				80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */,
 				D4E5F6A7B8C9D0E1F2A3B4C5 /* SkyView.swift */,
+				44DD5E6F7A8B9C0D1E2F3A4B /* TreePreviewView.swift */,
 				C3D4E5F6A7B8C9D0E1F2A3B4 /* TreeView.swift */,
 				E5F6A7B8C9D0E1F2A3B4C5D6 /* TreeGrowthView.swift */,
 			);
@@ -136,6 +156,7 @@
 				B5B05D51B04467F0C772BB44 /* GameResult.swift */,
 				0F27992A52C3723E8B285FF8 /* GameSession.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* Rep.swift */,
+				BB1C2D3E4F5A6B7C8D9E0F1A /* TreeSpecies.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -155,6 +176,7 @@
 				B5A187E53E6B987BF2B16A00 /* Audio */,
 				F0888C6B6C0889D7A789BFB6 /* Game */,
 				A92B96E77DBDD4DA0845FF4A /* Models */,
+				AB1234567890ABCDEF123456 /* Rendering */,
 				78F29DDEA3233325E5115D23 /* Resources */,
 				5ABEFFFF69ADBD86FD1C32C3 /* Tracking */,
 				25C276D9576F98F4D8D51E00 /* Views */,
@@ -167,6 +189,19 @@
 			children = (
 			);
 			path = Sounds;
+			sourceTree = "<group>";
+		};
+		AB1234567890ABCDEF123456 /* Rendering */ = {
+			isa = PBXGroup;
+			children = (
+				AADD1E2F3A4B5C6D7E8F9A0B /* AcaciaTreeRenderer.swift */,
+				66FF7A8B9C0D1E2F3A4B5C6D /* BushyTreeRenderer.swift */,
+				FF5A6B7C8D9E0F1A2B3C4D5E /* OakTreeRenderer.swift */,
+				88BB9C0D1E2F3A4B5C6D7E8F /* PineTreeRenderer.swift */,
+				22BB3C4D5E6F7A8B9C0D1E2F /* RoundTreeRenderer.swift */,
+				DD3E4F5A6B7C8D9E0F1A2B3C /* TreeRenderer.swift */,
+			);
+			path = Rendering;
 			sourceTree = "<group>";
 		};
 		F0888C6B6C0889D7A789BFB6 /* Game */ = {
@@ -243,6 +278,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				01A2B3C4D5E6F7A8B9C0D1E2 /* AmbientBlobBackground.swift in Sources */,
 				EC6553ADAEB907EA1CFDBC3C /* AudioManager.swift in Sources */,
 				B211B86C455FDDFF4B1CC7C8 /* CalibrationData.swift in Sources */,
 				59318CB5DF9E6F4E268DE479 /* CalibrationView.swift in Sources */,
@@ -268,6 +304,14 @@
 				C9D0E1F2A3B4C5D6E7F8A9B0 /* SkyView.swift in Sources */,
 				D0E1F2A3B4C5D6E7F8A9B0C1 /* TreeGrowthView.swift in Sources */,
 				4F63A0D3B86D4B8D36904562 /* TouchPoseProvider.swift in Sources */,
+				AA1B2C3D4E5F6A7B8C9D0E1F /* TreeSpecies.swift in Sources */,
+				CC2D3E4F5A6B7C8D9E0F1A2B /* TreeRenderer.swift in Sources */,
+				EE4F5A6B7C8D9E0F1A2B3C4D /* OakTreeRenderer.swift in Sources */,
+				11AA2B3C4D5E6F7A8B9C0D1E /* RoundTreeRenderer.swift in Sources */,
+				55EE6F7A8B9C0D1E2F3A4B5C /* BushyTreeRenderer.swift in Sources */,
+				77AA8B9C0D1E2F3A4B5C6D7E /* PineTreeRenderer.swift in Sources */,
+				99CC0D1E2F3A4B5C6D7E8F9A /* AcaciaTreeRenderer.swift in Sources */,
+				33CC4D5E6F7A8B9C0D1E2F3A /* TreePreviewView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,6 +11,12 @@ final class GameSession {
     var treeHealth: Double
     var avgRestCompliance: Double
     var isDemoMode: Bool
+    var treeSpeciesRaw: String
+
+    var treeSpecies: TreeSpecies {
+        get { TreeSpecies(rawValue: treeSpeciesRaw) ?? .oak }
+        set { treeSpeciesRaw = newValue.rawValue }
+    }
 
     init(
         date: Date = .now,
@@ -20,7 +26,8 @@ final class GameSession {
         treeGrowth: Double = 0,
         treeHealth: Double = 1.0,
         avgRestCompliance: Double = 1.0,
-        isDemoMode: Bool = false
+        isDemoMode: Bool = false,
+        treeSpecies: TreeSpecies = .oak
     ) {
         self.date = date
         self.durationSeconds = durationSeconds
@@ -30,5 +37,6 @@ final class GameSession {
         self.treeHealth = treeHealth
         self.avgRestCompliance = avgRestCompliance
         self.isDemoMode = isDemoMode
+        self.treeSpeciesRaw = treeSpecies.rawValue
     }
 }

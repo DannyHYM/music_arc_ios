@@ -117,7 +117,7 @@ struct SessionHistoryView: View {
         let treeHeight = 80 + 140 * session.treeGrowth
 
         return VStack(spacing: 4) {
-            TreeView(growth: session.treeGrowth, health: session.treeHealth)
+            TreeView(growth: session.treeGrowth, health: session.treeHealth, species: session.treeSpecies)
                 .frame(width: 80, height: treeHeight)
 
             Text(session.date.formatted(.dateTime.month(.abbreviated).day()))
@@ -137,7 +137,7 @@ struct SessionHistoryView: View {
     private func sessionDetailSheet(session: GameSession) -> some View {
         NavigationStack {
             VStack(spacing: 20) {
-                TreeView(growth: session.treeGrowth, health: session.treeHealth)
+                TreeView(growth: session.treeGrowth, health: session.treeHealth, species: session.treeSpecies)
                     .frame(width: 160, height: 200)
                     .padding(.top, 20)
 
@@ -201,7 +201,8 @@ struct SessionHistoryView: View {
                 treeGrowth: session.treeGrowth,
                 treeHealth: session.treeHealth,
                 avgRestCompliance: session.avgRestCompliance,
-                isDemoMode: session.isDemoMode
+                isDemoMode: session.isDemoMode,
+                treeSpecies: session.treeSpeciesRaw
             )
         }
 
@@ -228,6 +229,7 @@ struct SessionExport: Codable {
     let treeHealth: Double
     let avgRestCompliance: Double
     let isDemoMode: Bool
+    let treeSpecies: String
 }
 
 struct ShareSheet: UIViewControllerRepresentable {

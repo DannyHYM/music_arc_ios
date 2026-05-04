@@ -36,6 +36,7 @@ final class GameEngine {
     let config: GameConfig
     let calibration: CalibrationData
     let scoreTracker = ScoreTracker()
+    var treeSpecies: TreeSpecies = .oak
 
     private var poseProvider: (any PoseProvider)?
     private var gameTimer: AnyCancellable?
@@ -199,7 +200,8 @@ final class GameEngine {
             treeGrowth: scoreTracker.growthPercentage,
             treeHealth: scoreTracker.treeHealth,
             avgRestCompliance: scoreTracker.averageRestCompliance,
-            inputMode: config.inputMode
+            inputMode: config.inputMode,
+            treeSpecies: treeSpecies
         )
     }
 

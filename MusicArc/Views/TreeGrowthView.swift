@@ -11,6 +11,7 @@ struct TreeGrowthView: View {
     let waterLevel: Double
     let isInSunlightZone: Bool
     let growthSpurtCount: Int
+    var treeSpecies: TreeSpecies = .oak
 
     @State private var treeScale: CGFloat = 1.0
 
@@ -32,7 +33,7 @@ struct TreeGrowthView: View {
 
                 GroundView(phase: phase)
 
-                TreeView(growth: treeGrowth, health: treeHealth)
+                TreeView(growth: treeGrowth, health: treeHealth, species: treeSpecies)
                     .frame(width: w * 0.85, height: h * 0.85)
                     .position(x: w * 0.5, y: h * 0.52)
                     .scaleEffect(treeScale)
