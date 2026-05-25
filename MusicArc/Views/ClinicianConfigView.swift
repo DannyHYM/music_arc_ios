@@ -1,22 +1,31 @@
 import SwiftUI
 
-struct HomeView: View {
+struct ClinicianConfigView: View {
     @Binding var navigationPath: NavigationPath
+
     @State private var inputMode: InputMode = .touch
     @State private var trackingArm: TrackingArm = .right
     @State private var repCount: Int = 8
     @State private var activeDuration: Double = 4.0
     @State private var restDuration: Double = 3.0
+    @State private var didLoad = false
+    @State private var saveBanner: String?
 
-    private var estimatedTime: Int {
-        let config = GameConfig(
+    private var currentConfig: GameConfig {
+        let effectiveMode: InputMode = (inputMode == .camera && !GameConfig.cameraAvailable)
+            ? .touch
+            : inputMode
+        return GameConfig(
             repCount: repCount,
             activeDuration: activeDuration,
             restDuration: restDuration,
-            inputMode: inputMode,
+            inputMode: effectiveMode,
             trackingArm: trackingArm
         )
-        return config.totalSessionSeconds
+    }
+
+    private var estimatedTime: Int {
+        currentConfig.totalSessionSeconds
     }
 
     var body: some View {
@@ -25,8 +34,8 @@ struct HomeView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    headerSection
-                        .padding(.top, 48)
+                    header
+                        .padding(.top, 24)
 
                     sessionConfigSection
 
@@ -38,29 +47,42 @@ struct HomeView: View {
 
                     treePreviewSection
 
-                    startButton
+                    actionButtons
 
-                    historyButton
+                    if let saveBanner {
+                        Text(saveBanner)
+                            .font(.footnote)
+                            .foregroundStyle(.green)
+                            .padding(.vertical, 4)
+                    }
 
-                    Spacer(minLength: 16)
+                    Spacer(minLength: 24)
                 }
                 .padding(.horizontal, 28)
             }
         }
-        .navigationBarHidden(true)
+        .navigationTitle("Clinician Setup")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear(perform: loadIfNeeded)
     }
 
     // MARK: - Header
 
-    private var headerSection: some View {
+    private var header: some View {
         VStack(spacing: 6) {
-            Text("MusicArc")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+            Image(systemName: "stethoscope")
+                .font(.system(size: 30))
+                .foregroundStyle(Color(red: 0.25, green: 0.5, blue: 0.25))
+
+            Text("Configure Patient Exercise")
+                .font(.headline)
                 .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
 
-            Text("Grow your tree through movement")
-                .font(.subheadline)
-                .foregroundStyle(Color(red: 0.3, green: 0.5, blue: 0.3))
+            Text("These settings will be used every time the patient taps Begin.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
         }
     }
 
@@ -68,16 +90,12 @@ struct HomeView: View {
 
     private var sessionConfigSection: some View {
         VStack(spacing: 14) {
-            Text("Session Setup")
+            Text("Session")
                 .font(.headline)
                 .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
 
             VStack(spacing: 12) {
-                configRow(
-                    label: "Reps",
-                    value: "\(repCount)",
-                    icon: "repeat"
-                ) {
+                configRow(label: "Reps", value: "\(repCount)", icon: "repeat") {
                     Stepper("", value: $repCount, in: 4...16)
                         .labelsHidden()
                 }
@@ -114,7 +132,12 @@ struct HomeView: View {
         }
     }
 
-    private func configRow<Content: View>(label: String, value: String, icon: String, @ViewBuilder control: () -> Content) -> some View {
+    private func configRow<Content: View>(
+        label: String,
+        value: String,
+        icon: String,
+        @ViewBuilder control: () -> Content
+    ) -> some View {
         HStack {
             Image(systemName: icon)
                 .foregroundStyle(Color(red: 0.3, green: 0.6, blue: 0.3))
@@ -152,10 +175,22 @@ struct HomeView: View {
                 .frame(height: 32)
 
             if inputMode == .camera && !GameConfig.cameraAvailable {
-                Label("Camera not available in Simulator", systemImage: "exclamationmark.triangle.fill")
+                Label("Camera not available in Simulator (will fall back to Touch)",
+                      systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
                     .foregroundStyle(.orange)
             }
+        }
+    }
+
+    private var inputModeDescription: String {
+        switch inputMode {
+        case .camera:
+            return "Front camera tracks the patient's arm via pose detection."
+        case .touch:
+            return "Patient drags up/down on screen. Useful if camera setup is difficult."
+        case .demo:
+            return "Auto-demo plays the game automatically — for clinician demonstration."
         }
     }
 
@@ -169,13 +204,12 @@ struct HomeView: View {
 
             Picker("Tracking Arm", selection: $trackingArm) {
                 ForEach(TrackingArm.allCases, id: \.self) { arm in
-                    Label(arm.rawValue, systemImage: arm == .left ? "hand.raised.fill" : "hand.raised.fill")
-                        .tag(arm)
+                    Text(arm.rawValue).tag(arm)
                 }
             }
             .pickerStyle(.segmented)
 
-            Text("Which arm will you raise during the exercise?")
+            Text("Which arm the patient will raise during the exercise.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -186,7 +220,7 @@ struct HomeView: View {
 
     private var treePreviewSection: some View {
         VStack(spacing: 10) {
-            Text("View Animation")
+            Text("Tree Previews")
                 .font(.headline)
                 .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
 
@@ -209,61 +243,95 @@ struct HomeView: View {
                     .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
                 }
             }
+
+            Text("Tree species is chosen randomly each session.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
-    // MARK: - Buttons
+    // MARK: - Actions
 
-    private var startButton: some View {
-        Button {
-            let effectiveMode: InputMode
-            if inputMode == .camera && !GameConfig.cameraAvailable {
-                effectiveMode = .touch
-            } else {
-                effectiveMode = inputMode
+    private var actionButtons: some View {
+        VStack(spacing: 12) {
+            Button {
+                save()
+            } label: {
+                Label("Save Configuration", systemImage: "checkmark.circle.fill")
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
             }
-            let config = GameConfig(
-                repCount: repCount,
-                activeDuration: activeDuration,
-                restDuration: restDuration,
-                inputMode: effectiveMode,
-                trackingArm: trackingArm
-            )
+            .buttonStyle(.borderedProminent)
+            .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
+
+            Button {
+                testRun()
+            } label: {
+                Label("Test Run", systemImage: "play.circle")
+                    .font(.body)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.bordered)
+            .tint(Color(red: 0.2, green: 0.45, blue: 0.2))
+
+            Button {
+                navigationPath.append(AppRoute.history(clinicianAccess: true))
+            } label: {
+                Label("View Patient History", systemImage: "list.bullet.rectangle")
+                    .font(.body)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.bordered)
+            .tint(Color(red: 0.2, green: 0.45, blue: 0.2))
+        }
+    }
+
+    // MARK: - Persistence
+
+    private func loadIfNeeded() {
+        guard !didLoad else { return }
+        didLoad = true
+
+        if let existing = PrescriptionStore.shared.load() {
+            let cfg = existing.config
+            repCount = cfg.repCount
+            activeDuration = cfg.activeDuration
+            restDuration = cfg.restDuration
+            inputMode = cfg.inputMode
+            trackingArm = cfg.trackingArm
+        }
+    }
+
+    private func save() {
+        let prescription = Prescription(config: currentConfig, lastUpdated: .now)
+        do {
+            try PrescriptionStore.shared.save(prescription)
+            saveBanner = "Saved — patient can now press Begin."
+        } catch {
+            saveBanner = "Couldn't save: \(error.localizedDescription)"
+        }
+    }
+
+    private func testRun() {
+        // Save before testing so the test reflects what the patient will see.
+        let prescription = Prescription(config: currentConfig, lastUpdated: .now)
+        try? PrescriptionStore.shared.save(prescription)
+
+        let config = currentConfig
+        if config.inputMode == .camera {
             navigationPath.append(AppRoute.calibration(config))
-        } label: {
-            Label("Start Growing", systemImage: "leaf.fill")
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
-    }
-
-    private var historyButton: some View {
-        Button {
-            navigationPath.append(AppRoute.history)
-        } label: {
-            Label("My Forest", systemImage: "tree.fill")
-                .font(.body)
-        }
-        .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
-    }
-
-    private var inputModeDescription: String {
-        switch inputMode {
-        case .camera:
-            return "Uses the front camera + body pose tracking"
-        case .touch:
-            return "Drag up/down on screen to control arm height"
-        case .demo:
-            return "Automated arm movement (watch the game play itself)"
+        } else {
+            let cal = CalibrationData(minHeight: 0.0, maxHeight: 1.0)
+            navigationPath.append(AppRoute.game(config, cal))
         }
     }
 }
 
 #Preview {
     NavigationStack {
-        HomeView(navigationPath: .constant(NavigationPath()))
+        ClinicianConfigView(navigationPath: .constant(NavigationPath()))
     }
 }

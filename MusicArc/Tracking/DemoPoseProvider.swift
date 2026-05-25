@@ -10,6 +10,14 @@ final class DemoPoseProvider: PoseProvider {
     private var timer: AnyCancellable?
     private var elapsed: TimeInterval = 0
 
+    private let activeDuration: TimeInterval
+    private let restDuration: TimeInterval
+
+    init(activeDuration: TimeInterval, restDuration: TimeInterval) {
+        self.activeDuration = activeDuration
+        self.restDuration = restDuration
+    }
+
     func start() {
         elapsed = 0
         timer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common)
@@ -27,32 +35,32 @@ final class DemoPoseProvider: PoseProvider {
         timer = nil
     }
 
-    /// Simulates a rep cycle: raise high for ~4s, then drop low for ~3s.
-    /// Matches the default GameConfig active/rest durations.
+    /// Sine-style sweep that follows the configured active/rest cadence so the demo
+    /// arm reaches its peak during the active phase and bottoms out during rest.
     private func syntheticHeight(at t: TimeInterval) -> Double {
-        let activeDuration = 4.0
-        let restDuration = 3.0
         let cycleDuration = activeDuration + restDuration
+        guard cycleDuration > 0 else { return 0.5 }
+
         let phase = t.truncatingRemainder(dividingBy: cycleDuration)
 
+        // Ramp time scales with the phase length so customized cadences still look smooth.
+        let rampUp: TimeInterval = min(0.5, activeDuration * 0.2)
+        let rampDown: TimeInterval = min(0.3, activeDuration * 0.1)
+        let settle: TimeInterval = min(0.3, restDuration * 0.15)
+
         let value: Double
-        if phase < 0.5 {
-            // Ramp up from rest to active
-            let rampProgress = phase / 0.5
+        if phase < rampUp {
+            let rampProgress = phase / rampUp
             value = 0.1 + 0.8 * smoothStep(rampProgress)
-        } else if phase < activeDuration - 0.3 {
-            // Hold at max with slight variation
+        } else if phase < activeDuration - rampDown {
             value = 0.9 + 0.05 * sin(phase * 3)
         } else if phase < activeDuration {
-            // Transition down
-            let transitionProgress = (phase - (activeDuration - 0.3)) / 0.3
+            let transitionProgress = (phase - (activeDuration - rampDown)) / rampDown
             value = 0.9 * (1 - smoothStep(transitionProgress)) + 0.1 * smoothStep(transitionProgress)
-        } else if phase < activeDuration + 0.3 {
-            // Settling into rest
-            let settleProgress = (phase - activeDuration) / 0.3
+        } else if phase < activeDuration + settle {
+            let settleProgress = (phase - activeDuration) / settle
             value = 0.1 * (1 + 0.5 * (1 - smoothStep(settleProgress)))
         } else {
-            // Resting low
             value = 0.1 + 0.03 * sin(phase * 2)
         }
 

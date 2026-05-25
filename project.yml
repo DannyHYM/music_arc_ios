@@ -27,3 +27,24 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
         INFOPLIST_KEY_NSCameraUsageDescription: "Music Arc needs camera access to track your arm movements during the rehab game."
+  MusicArcTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: MusicArcTests
+    dependencies:
+      - target: MusicArc
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.musicarc.app.tests
+        GENERATE_INFOPLIST_FILE: "YES"
+schemes:
+  MusicArc:
+    build:
+      targets:
+        MusicArc: all
+        MusicArcTests: [test]
+    test:
+      targets:
+        - MusicArcTests
+      gatherCoverageData: false

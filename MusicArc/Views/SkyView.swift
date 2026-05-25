@@ -1,5 +1,30 @@
 import SwiftUI
 
+private struct CachedStar {
+    let xFrac: CGFloat
+    let yFrac: CGFloat
+    let opacity: Double
+    let size: CGFloat
+}
+
+private let cachedStars: [CachedStar] = {
+    // Deterministic positions so stars don't flicker between renders.
+    // Uses a GLSL-style fract(sin(seed)) pseudo-random for portability.
+    func hash(_ seed: Double) -> Double {
+        let v = sin(seed) * 43758.5453
+        return v - floor(v)
+    }
+    return (0..<20).map { i in
+        let s = Double(i) + 1
+        return CachedStar(
+            xFrac: CGFloat(hash(s * 12.9898)),
+            yFrac: CGFloat(hash(s * 78.233) * 0.5),
+            opacity: 0.3 + 0.5 * hash(s * 39.346),
+            size: 1.5 + 2.0 * CGFloat(hash(s * 17.273))
+        )
+    }
+}()
+
 struct SkyView: View {
     let phase: GamePhase
     let handHeight: Double
@@ -196,13 +221,12 @@ struct SkyView: View {
                 .position(x: w * 0.8, y: h * 0.12)
                 .opacity(isRestingProperly ? 1.0 : 0.3)
 
-            ForEach(0..<20, id: \.self) { i in
-                let starX = CGFloat.random(in: 0...1)
-                let starY = CGFloat.random(in: 0...0.5)
+            ForEach(0..<cachedStars.count, id: \.self) { i in
+                let star = cachedStars[i]
                 Circle()
-                    .fill(Color.white.opacity(Double.random(in: 0.3...0.8)))
-                    .frame(width: CGFloat.random(in: 1.5...3.5), height: CGFloat.random(in: 1.5...3.5))
-                    .position(x: w * starX, y: h * starY)
+                    .fill(Color.white.opacity(star.opacity))
+                    .frame(width: star.size, height: star.size)
+                    .position(x: w * star.xFrac, y: h * star.yFrac)
             }
         }
     }

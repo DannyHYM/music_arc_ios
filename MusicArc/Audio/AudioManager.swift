@@ -4,16 +4,27 @@ import AudioToolbox
 final class AudioManager {
     static let shared = AudioManager()
 
+    private let engine = AVAudioEngine()
+    private let players: [AVAudioPlayerNode]
+    private let format: AVAudioFormat
+    private let sampleRate: Double = 44100
+    private let serialQueue = DispatchQueue(label: "com.musicarc.audio")
+    private var nextPlayerIndex = 0
+    private var sessionConfigured = false
+
     private init() {
-        configureAudioSession()
+        guard let fmt = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1) else {
+            fatalError("Failed to create audio format")
+        }
+        format = fmt
+        players = (0..<4).map { _ in AVAudioPlayerNode() }
+        for player in players {
+            engine.attach(player)
+            engine.connect(player, to: engine.mainMixerNode, format: format)
+        }
     }
 
-    private func configureAudioSession() {
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
-        try? AVAudioSession.sharedInstance().setActive(true)
-    }
-
-    // MARK: - Countdown (unchanged)
+    // MARK: - Countdown (iOS system sounds — placeholder)
 
     func playCountdownTick() {
         AudioServicesPlaySystemSound(1104)
@@ -46,13 +57,15 @@ final class AudioManager {
     // MARK: - Session Complete
 
     func playTreeComplete() {
-        playTone(frequency: 523.25, duration: 0.12, volume: 0.25)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            self.playTone(frequency: 659.25, duration: 0.12, volume: 0.25)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) {
-            self.playChord(frequencies: [783.99, 1046.5], duration: 0.3, volume: 0.25)
-        }
+        guard let b1 = buildBuffer(frequencies: [523.25], duration: 0.12, volume: 0.25),
+              let b2 = buildBuffer(frequencies: [659.25], duration: 0.12, volume: 0.25),
+              let b3 = buildBuffer(frequencies: [783.99, 1046.5], duration: 0.3, volume: 0.25)
+        else { return }
+        ensureRunning()
+        let player = checkoutPlayer()
+        player.scheduleBuffer(b1, completionCallbackType: .dataPlayedBack) { _ in }
+        player.scheduleBuffer(b2, completionCallbackType: .dataPlayedBack) { _ in }
+        player.scheduleBuffer(b3, completionCallbackType: .dataPlayedBack) { _ in }
     }
 
     // MARK: - Tone Generation
@@ -62,14 +75,18 @@ final class AudioManager {
     }
 
     private func playChord(frequencies: [Double], duration: Double, volume: Float = 0.3) {
-        let sampleRate: Double = 44100
-        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        guard let buffer = buildBuffer(frequencies: frequencies, duration: duration, volume: volume) else { return }
+        ensureRunning()
+        let player = checkoutPlayer()
+        player.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { _ in }
+    }
 
-        guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1) else { return }
-        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
+    private func buildBuffer(frequencies: [Double], duration: Double, volume: Float) -> AVAudioPCMBuffer? {
+        let frameCount = AVAudioFrameCount(sampleRate * duration)
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return nil }
         buffer.frameLength = frameCount
 
-        guard let data = buffer.floatChannelData?[0] else { return }
+        guard let data = buffer.floatChannelData?[0] else { return nil }
         let amplitude = volume / Float(frequencies.count)
 
         for i in 0..<Int(frameCount) {
@@ -94,19 +111,34 @@ final class AudioManager {
             data[i] = sample
         }
 
-        let engine = AVAudioEngine()
-        let player = AVAudioPlayerNode()
-        engine.attach(player)
-        engine.connect(player, to: engine.mainMixerNode, format: format)
+        return buffer
+    }
 
-        do {
-            try engine.start()
-            player.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { _ in
-                engine.stop()
+    private func checkoutPlayer() -> AVAudioPlayerNode {
+        serialQueue.sync {
+            let player = players[nextPlayerIndex]
+            nextPlayerIndex = (nextPlayerIndex + 1) % players.count
+            return player
+        }
+    }
+
+    private func ensureRunning() {
+        serialQueue.sync {
+            if !sessionConfigured {
+                try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
+                try? AVAudioSession.sharedInstance().setActive(true)
+                sessionConfigured = true
             }
-            player.play()
-        } catch {
-            // Audio is non-critical
+            if !engine.isRunning {
+                do {
+                    try engine.start()
+                    for player in players {
+                        player.play()
+                    }
+                } catch {
+                    // Audio is non-critical; subsequent calls will retry.
+                }
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ final class PoseDetector: PoseProvider {
         armPoseSubject.eraseToAnyPublisher()
     }
 
-    var captureSession: AVCaptureSession { cameraManager.session }
+    var captureSession: AVCaptureSession? { cameraManager.session }
 
     let cameraManager = CameraManager()
     let trackingArm: TrackingArm
@@ -56,13 +56,16 @@ final class PoseDetector: PoseProvider {
 
     private func processFrame(_ pixelBuffer: CVPixelBuffer) {
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
-        try? handler.perform([request])
+        do {
+            try handler.perform([request])
+        } catch {
+            // Vision failed for this frame — emit untracked so we don't reuse the previous result.
+            armPoseSubject.send(.untracked)
+            return
+        }
 
         guard let observation = request.results?.first else {
-            armPoseSubject.send(ArmPose(
-                shoulder: nil, elbow: nil, wrist: nil,
-                normalizedHeight: 0.5, isTracking: false
-            ))
+            armPoseSubject.send(.untracked)
             return
         }
 

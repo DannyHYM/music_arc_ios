@@ -7,20 +7,14 @@ final class TouchPoseProvider: PoseProvider {
     }
 
     private let armHeightSubject = CurrentValueSubject<Double, Never>(0.5)
-    private var timer: AnyCancellable?
 
     func start() {
-        timer = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self else { return }
-                self.armHeightSubject.send(self.armHeightSubject.value)
-            }
+        // No timer needed — updateHeight publishes on demand and
+        // CurrentValueSubject hands the latest value to new subscribers.
     }
 
     func stop() {
-        timer?.cancel()
-        timer = nil
+        // No-op.
     }
 
     func updateHeight(_ normalized: Double) {

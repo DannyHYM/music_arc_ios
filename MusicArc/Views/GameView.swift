@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import AVFoundation
 
 struct GameView: View {
     let config: GameConfig
@@ -9,6 +10,9 @@ struct GameView: View {
     @State private var engine: GameEngine?
     @State private var hasStarted = false
     @State private var showQuitConfirmation = false
+    @State private var lightHaptic = UIImpactFeedbackGenerator(style: .light)
+    @State private var softHaptic = UIImpactFeedbackGenerator(style: .soft)
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -72,6 +76,17 @@ struct GameView: View {
                         .offset(y: -40)
                 }
 
+                if config.isCameraMode,
+                   let session = engine.poseProvider?.captureSession,
+                   !engine.isPaused, !engine.isFinished {
+                    cameraPiP(session: session, engine: engine)
+                }
+
+                if config.isCameraMode, engine.isTrackingLost,
+                   !engine.isPaused, !engine.isFinished {
+                    trackingLostBanner
+                }
+
                 if engine.isInCountdown {
                     countdownOverlay(engine: engine)
                 }
@@ -102,21 +117,75 @@ struct GameView: View {
             e.treeSpecies = .random()
             self.engine = e
             e.start()
+            lightHaptic.prepare()
+            softHaptic.prepare()
         }
         .onDisappear {
             engine?.stop()
         }
         .onChange(of: engine?.growthSpurtCount ?? 0) { oldVal, newVal in
             guard newVal > oldVal, newVal > 0 else { return }
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            lightHaptic.impactOccurred()
+            lightHaptic.prepare()
         }
         .onChange(of: engine?.waterLevel ?? 0) { oldVal, newVal in
             if newVal > oldVal && Int(newVal * 5) > Int(oldVal * 5) {
-                let generator = UIImpactFeedbackGenerator(style: .soft)
-                generator.impactOccurred()
+                softHaptic.impactOccurred()
+                softHaptic.prepare()
             }
         }
+        .onChange(of: scenePhase) { _, newPhase in
+            // App moving to background: pause the session. We don't auto-resume
+            // on .active because the patient may have put the phone down.
+            if newPhase == .background || newPhase == .inactive {
+                if let engine, engine.isRunning, !engine.isPaused, !engine.isFinished {
+                    engine.pause()
+                }
+            }
+        }
+    }
+
+    // MARK: - Camera PiP
+
+    private func cameraPiP(session: AVCaptureSession, engine: GameEngine) -> some View {
+        VStack {
+            HStack {
+                Spacer()
+                ZStack {
+                    CameraPreviewView(session: session)
+                    SkeletonOverlayView(pose: engine.currentPose)
+                }
+                .frame(width: 110, height: 150)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.4), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.4), radius: 6, x: 0, y: 2)
+                .padding(.top, 60)
+                .padding(.trailing, 12)
+            }
+            Spacer()
+        }
+        .allowsHitTesting(false)
+    }
+
+    private var trackingLostBanner: some View {
+        VStack {
+            Spacer().frame(height: 220)
+            HStack(spacing: 8) {
+                Image(systemName: "video.slash.fill")
+                    .foregroundStyle(.orange)
+                Text("Move so the camera can see your arm")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.white)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial.opacity(0.7), in: Capsule())
+            Spacer()
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: - Touch Input
@@ -148,6 +217,7 @@ struct GameView: View {
                 .frame(width: 36, height: 36)
                 .background(.ultraThinMaterial.opacity(0.6), in: Circle())
         }
+        .accessibilityLabel("Pause session")
     }
 
     // MARK: - HUD
@@ -163,6 +233,8 @@ struct GameView: View {
         .padding(.horizontal, 18)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial.opacity(0.5), in: Capsule())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Rep \(min(engine.currentRepIndex + 1, config.repCount)) of \(config.repCount)")
     }
 
     private func repDotColor(index: Int, engine: GameEngine) -> Color {

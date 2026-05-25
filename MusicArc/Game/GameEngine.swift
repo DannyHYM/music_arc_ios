@@ -9,7 +9,7 @@ enum GamePhase: Equatable {
     case complete
 }
 
-@Observable
+@Observable @MainActor
 final class GameEngine {
     var reps: [Rep] = []
     var currentArmHeight: Double = 0.0
@@ -38,9 +38,14 @@ final class GameEngine {
     let scoreTracker = ScoreTracker()
     var treeSpecies: TreeSpecies = .oak
 
-    private var poseProvider: (any PoseProvider)?
+    var currentPose: ArmPose = .untracked
+    var isTrackingLost: Bool = false
+
+    private(set) var poseProvider: (any PoseProvider)?
     private var gameTimer: AnyCancellable?
     private var poseCancellable: AnyCancellable?
+    private var armPoseCancellable: AnyCancellable?
+    private var trackingLostStartedAt: Date?
     private var startTime: Date?
 
     private let audio = AudioManager.shared
@@ -112,10 +117,18 @@ final class GameEngine {
     }
 
     private func beginGameplay() {
+        // Defensive cleanup in case beginGameplay is ever invoked twice.
+        poseCancellable?.cancel()
+        armPoseCancellable?.cancel()
+        poseProvider?.stop()
+
         let provider: any PoseProvider
         switch config.inputMode {
         case .demo:
-            provider = DemoPoseProvider()
+            provider = DemoPoseProvider(
+                activeDuration: config.activeDuration,
+                restDuration: config.restDuration
+            )
         case .touch:
             let tp = TouchPoseProvider()
             self.touchProvider = tp
@@ -129,8 +142,20 @@ final class GameEngine {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] rawHeight in
                 guard let self else { return }
-                self.currentArmHeight = self.calibration.normalize(rawHeight)
+                if self.config.inputMode == .demo {
+                    self.currentArmHeight = min(1.0, max(0.0, rawHeight))
+                } else {
+                    self.currentArmHeight = self.calibration.normalize(rawHeight)
+                }
             }
+
+        if let posePublisher = provider.armPosePublisher {
+            armPoseCancellable = posePublisher
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] pose in
+                    self?.handlePoseUpdate(pose)
+                }
+        }
 
         provider.start()
         startTime = Date()
@@ -155,6 +180,9 @@ final class GameEngine {
         gameTimer = nil
         countdownTimer?.cancel()
         countdownTimer = nil
+        // Stop the pose pipeline (camera, vision, demo timer). Subscriptions stay alive
+        // so when we resume() they continue without re-wiring.
+        poseProvider?.pause()
     }
 
     func resume() {
@@ -166,6 +194,8 @@ final class GameEngine {
         }
         pausedAt = nil
         isPaused = false
+        // Restart the pose pipeline.
+        poseProvider?.resume()
 
         if isInCountdown {
             startCountdown()
@@ -185,10 +215,27 @@ final class GameEngine {
         countdownTimer = nil
         poseCancellable?.cancel()
         poseCancellable = nil
+        armPoseCancellable?.cancel()
+        armPoseCancellable = nil
         poseProvider?.stop()
         poseProvider = nil
         isRunning = false
         isPaused = false
+        isTrackingLost = false
+        trackingLostStartedAt = nil
+    }
+
+    private func handlePoseUpdate(_ pose: ArmPose) {
+        currentPose = pose
+        if pose.isTracking {
+            trackingLostStartedAt = nil
+            isTrackingLost = false
+        } else if trackingLostStartedAt == nil {
+            trackingLostStartedAt = Date()
+        } else if let start = trackingLostStartedAt,
+                  Date().timeIntervalSince(start) > 1.0 {
+            isTrackingLost = true
+        }
     }
 
     func buildResult() -> GameResult {
@@ -228,7 +275,7 @@ final class GameEngine {
 
         if elapsedTime >= rep.activeStartTime && elapsedTime < rep.activeEndTime {
             if currentPhase != .active {
-                restBonusMultiplier = 1.0 + 0.3 * waterLevel
+                restBonusMultiplier = 1.0 + config.scoring.restBonusScale * waterLevel
                 currentPhase = .active
                 currentRepGrowth = 0.0
                 growthSpurtAccumulator = 0.0
@@ -278,7 +325,7 @@ final class GameEngine {
         treeGrowth = scoreTracker.growthPercentage
 
         growthSpurtAccumulator += increment
-        let spurtThreshold = 1.0 / (Double(max(1, config.repCount)) * 4.0)
+        let spurtThreshold = 1.0 / (Double(max(1, config.repCount)) * config.scoring.spurtsPerRep)
         if growthSpurtAccumulator >= spurtThreshold {
             growthSpurtAccumulator -= spurtThreshold
             growthSpurtCount += 1
@@ -300,7 +347,7 @@ final class GameEngine {
             waterLevel = min(1.0, currentRepRestAccumulator / config.restDuration)
         } else {
             isRestingProperly = false
-            let penalty = 0.02 * dt
+            let penalty = config.scoring.healthPenaltyPerSecond * dt
             scoreTracker.penalizeHealth(penalty)
             treeHealth = scoreTracker.treeHealth
         }
@@ -309,8 +356,8 @@ final class GameEngine {
     private func applyRestBonus() {
         guard currentRepRestTotal > 0 else { return }
         let compliance = currentRepRestAccumulator / currentRepRestTotal
-        if compliance > 0.7 {
-            let healthRestore = 0.05 * compliance
+        if compliance > config.scoring.restComplianceThreshold {
+            let healthRestore = config.scoring.healthRestoreMax * compliance
             scoreTracker.restoreHealth(healthRestore)
             treeHealth = scoreTracker.treeHealth
         }

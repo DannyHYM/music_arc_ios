@@ -6,10 +6,18 @@ final class CameraManager: NSObject, ObservableObject {
     let framePublisher = PassthroughSubject<CVPixelBuffer, Never>()
 
     private let sessionQueue = DispatchQueue(label: "com.musicarc.camera")
+    private let configLock = NSLock()
     private var isConfigured = false
 
     func configure() {
-        guard !isConfigured else { return }
+        configLock.lock()
+        if isConfigured {
+            configLock.unlock()
+            return
+        }
+        isConfigured = true  // Claim the slot before dispatching to prevent a race.
+        configLock.unlock()
+
         sessionQueue.async { [weak self] in
             self?.setupSession()
         }
@@ -39,6 +47,10 @@ final class CameraManager: NSObject, ObservableObject {
             session.canAddInput(input)
         else {
             session.commitConfiguration()
+            // Couldn't configure — allow another attempt next time configure() is called.
+            configLock.lock()
+            isConfigured = false
+            configLock.unlock()
             return
         }
 
@@ -50,6 +62,9 @@ final class CameraManager: NSObject, ObservableObject {
 
         guard session.canAddOutput(output) else {
             session.commitConfiguration()
+            configLock.lock()
+            isConfigured = false
+            configLock.unlock()
             return
         }
 
@@ -60,7 +75,6 @@ final class CameraManager: NSObject, ObservableObject {
         }
 
         session.commitConfiguration()
-        isConfigured = true
     }
 }
 

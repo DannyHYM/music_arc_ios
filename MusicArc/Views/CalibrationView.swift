@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import AVFoundation
 
 struct CalibrationView: View {
     let config: GameConfig
@@ -18,12 +19,21 @@ struct CalibrationView: View {
     @State private var poseCancellable: AnyCancellable?
     @State private var phaseTimer: AnyCancellable?
     @State private var progress: Double = 0
+    @State private var phaseStartedAt: Date?
 
-    enum CalibrationPhase: String {
-        case intro = "Get Ready"
-        case raiseArm = "Reach for the Sun"
-        case lowerArm = "Return to Earth"
-        case done = "All Set!"
+    private let phaseDuration: TimeInterval = 4.0
+    private let settleDuration: TimeInterval = 1.5
+    private let samplingGracePeriod: TimeInterval = 0.5
+    private let minimumRange: Double = 0.15
+
+    enum CalibrationPhase: Equatable {
+        case intro
+        case raiseArm
+        case settle
+        case lowerArm
+        case done
+        case failedNarrowRange
+        case cameraDenied
     }
 
     private var needsCalibration: Bool {
@@ -32,38 +42,10 @@ struct CalibrationView: View {
 
     var body: some View {
         ZStack {
-            if needsCalibration, let detector = poseDetector {
-                CameraPreviewView(session: detector.captureSession)
-                    .ignoresSafeArea()
-
-                SkeletonOverlayView(pose: currentPose)
-                    .ignoresSafeArea()
-
-                LinearGradient(
-                    colors: [
-                        Color.black.opacity(0.55),
-                        Color.black.opacity(0.2),
-                        Color.black.opacity(0.55)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            } else {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.15, green: 0.25, blue: 0.1),
-                        Color(red: 0.1, green: 0.18, blue: 0.08),
-                        Color.black
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            }
+            backgroundLayer
 
             VStack(spacing: 32) {
-                if needsCalibration {
+                if needsCalibration && phase != .cameraDenied {
                     trackingStatusBadge
                         .padding(.top, 16)
                 }
@@ -74,9 +56,11 @@ struct CalibrationView: View {
                     .font(.system(size: 72))
                     .foregroundStyle(.white)
 
-                Text(phase.rawValue)
+                Text(phaseTitle)
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
 
                 Text(phaseInstruction)
                     .font(.body)
@@ -84,9 +68,9 @@ struct CalibrationView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
 
-                if phase == .raiseArm || phase == .lowerArm {
+                if phase == .raiseArm || phase == .lowerArm || phase == .settle {
                     ProgressView(value: progress)
-                        .tint(.green)
+                        .tint(phase == .settle ? .yellow : .green)
                         .padding(.horizontal, 60)
 
                     heightBar
@@ -94,50 +78,7 @@ struct CalibrationView: View {
 
                 Spacer()
 
-                if phase == .intro {
-                    Button {
-                        if needsCalibration {
-                            startCalibration()
-                        } else {
-                            skipCalibration()
-                        }
-                    } label: {
-                        Text(needsCalibration ? "Begin Calibration" : "Continue")
-                            .font(.title3.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
-                    .padding(.horizontal, 40)
-                }
-
-                if phase == .done {
-                    VStack(spacing: 12) {
-                        Button {
-                            finishCalibration()
-                        } label: {
-                            Label("Start Growing", systemImage: "leaf.fill")
-                                .font(.title3.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.green)
-
-                        Button {
-                            restartCalibration()
-                        } label: {
-                            Label("Re-calibrate", systemImage: "arrow.counterclockwise")
-                                .font(.body.weight(.medium))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(.white)
-                    }
-                    .padding(.horizontal, 40)
-                }
+                phaseActionButtons
 
                 Spacer()
             }
@@ -152,12 +93,43 @@ struct CalibrationView: View {
                 .foregroundStyle(.white)
             }
         }
-        .onAppear {
-            if needsCalibration {
-                setupPoseDetector()
-            }
-        }
+        .onAppear(perform: handleAppear)
         .onDisappear { cleanup() }
+    }
+
+    // MARK: - Background
+
+    @ViewBuilder
+    private var backgroundLayer: some View {
+        if needsCalibration, let detector = poseDetector, let session = detector.captureSession, phase != .cameraDenied {
+            CameraPreviewView(session: session)
+                .ignoresSafeArea()
+
+            SkeletonOverlayView(pose: currentPose)
+                .ignoresSafeArea()
+
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.55),
+                    Color.black.opacity(0.2),
+                    Color.black.opacity(0.55)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        } else {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.15, green: 0.25, blue: 0.1),
+                    Color(red: 0.1, green: 0.18, blue: 0.08),
+                    Color.black
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        }
     }
 
     // MARK: - Tracking Status
@@ -184,9 +156,24 @@ struct CalibrationView: View {
             switch phase {
             case .intro: Image(systemName: needsCalibration ? "figure.stand" : "hand.draw")
             case .raiseArm: Image(systemName: "sun.max.fill")
+            case .settle: Image(systemName: "hourglass")
             case .lowerArm: Image(systemName: "arrow.down.to.line")
             case .done: Image(systemName: "checkmark.circle.fill")
+            case .failedNarrowRange: Image(systemName: "exclamationmark.triangle.fill")
+            case .cameraDenied: Image(systemName: "video.slash.fill")
             }
+        }
+    }
+
+    private var phaseTitle: String {
+        switch phase {
+        case .intro: return "Get Ready"
+        case .raiseArm: return "Reach for the Sun"
+        case .settle: return "Get Set"
+        case .lowerArm: return "Return to Earth"
+        case .done: return "All Set!"
+        case .failedNarrowRange: return "Let's Try Again"
+        case .cameraDenied: return "Camera Needed"
         }
     }
 
@@ -198,14 +185,20 @@ struct CalibrationView: View {
             } else if config.isDemoMode {
                 return "Auto-demo mode will play the game automatically.\n\nNo calibration needed."
             } else {
-                return "Position yourself so the camera can see your upper body.\nCheck the tracking dots on your arm, then tap begin."
+                return "Stand about an arm's length from the phone so your shoulders are in frame.\n\nWhen you're ready, tap Begin Calibration."
             }
         case .raiseArm:
             return "Raise your hand as HIGH as you can and hold it there.\nThis is how high the sun will go!"
+        case .settle:
+            return "Get ready to lower your arm…"
         case .lowerArm:
             return "Now lower your hand as LOW as comfortable and hold.\nThis is your resting position."
         case .done:
             return "Calibration complete! Your range has been recorded.\nLet's grow a tree!"
+        case .failedNarrowRange:
+            return "We didn't see your arm move enough.\nMake sure you raise and lower as much as you can, and try again."
+        case .cameraDenied:
+            return "Camera access is needed for pose tracking.\nOpen Settings to enable it, or use Touch mode instead."
         }
     }
 
@@ -237,9 +230,147 @@ struct CalibrationView: View {
         .padding(.horizontal, 40)
     }
 
+    // MARK: - Action Buttons
+
+    @ViewBuilder
+    private var phaseActionButtons: some View {
+        switch phase {
+        case .intro:
+            Button {
+                if needsCalibration {
+                    requestCameraAndStart()
+                } else {
+                    skipCalibration()
+                }
+            } label: {
+                Text(needsCalibration ? "Begin Calibration" : "Continue")
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
+            .padding(.horizontal, 40)
+
+        case .done:
+            VStack(spacing: 12) {
+                Button {
+                    finishCalibration()
+                } label: {
+                    Label("Start Growing", systemImage: "leaf.fill")
+                        .font(.title3.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+
+                Button {
+                    restartCalibration()
+                } label: {
+                    Label("Re-calibrate", systemImage: "arrow.counterclockwise")
+                        .font(.body.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .buttonStyle(.bordered)
+                .tint(.white)
+            }
+            .padding(.horizontal, 40)
+
+        case .failedNarrowRange:
+            Button {
+                restartCalibration()
+            } label: {
+                Label("Try Again", systemImage: "arrow.counterclockwise")
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
+            .padding(.horizontal, 40)
+
+        case .cameraDenied:
+            VStack(spacing: 12) {
+                Button {
+                    openSettings()
+                } label: {
+                    Label("Open Settings", systemImage: "gear")
+                        .font(.title3.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+
+                Button {
+                    cleanup()
+                    navigationPath.removeLast()
+                } label: {
+                    Text("Back")
+                        .font(.body.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .buttonStyle(.bordered)
+                .tint(.white)
+            }
+            .padding(.horizontal, 40)
+
+        default:
+            EmptyView()
+        }
+    }
+
+    // MARK: - Lifecycle
+
+    private func handleAppear() {
+        // For non-camera modes, no setup is required — patient taps Continue from the intro.
+        guard needsCalibration else { return }
+
+        // Don't start the pose detector until the user opts in via "Begin Calibration".
+        // This avoids triggering the camera permission prompt at view appear.
+    }
+
+    private func requestCameraAndStart() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        switch status {
+        case .authorized:
+            setupPoseDetector()
+            startCalibration()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        setupPoseDetector()
+                        startCalibration()
+                    } else {
+                        phase = .cameraDenied
+                    }
+                }
+            }
+        case .denied, .restricted:
+            phase = .cameraDenied
+        @unknown default:
+            phase = .cameraDenied
+        }
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+
     // MARK: - Pose Detection
 
     private func setupPoseDetector() {
+        // Tear down any prior detector before creating a new one.
+        heightCancellable?.cancel()
+        poseCancellable?.cancel()
+        poseDetector?.stop()
+
         let detector = PoseDetector(trackingArm: config.trackingArm)
         self.poseDetector = detector
 
@@ -247,6 +378,7 @@ struct CalibrationView: View {
             .receive(on: DispatchQueue.main)
             .sink { height in
                 self.currentHeight = height
+                guard self.isSamplingActive else { return }
                 if self.phase == .raiseArm {
                     self.recordedMax = max(self.recordedMax, height)
                 } else if self.phase == .lowerArm {
@@ -261,6 +393,11 @@ struct CalibrationView: View {
             }
 
         detector.start()
+    }
+
+    private var isSamplingActive: Bool {
+        guard let phaseStartedAt else { return false }
+        return Date().timeIntervalSince(phaseStartedAt) >= samplingGracePeriod
     }
 
     // MARK: - Calibration Flow
@@ -280,7 +417,17 @@ struct CalibrationView: View {
     private func beginRaisePhase() {
         phase = .raiseArm
         progress = 0
-        startPhaseTimer(duration: 4.0) {
+        phaseStartedAt = Date()
+        startPhaseTimer(duration: phaseDuration) {
+            beginSettlePhase()
+        }
+    }
+
+    private func beginSettlePhase() {
+        phase = .settle
+        progress = 0
+        phaseStartedAt = Date()
+        startPhaseTimer(duration: settleDuration) {
             beginLowerPhase()
         }
     }
@@ -288,8 +435,18 @@ struct CalibrationView: View {
     private func beginLowerPhase() {
         phase = .lowerArm
         progress = 0
-        startPhaseTimer(duration: 4.0) {
+        phaseStartedAt = Date()
+        startPhaseTimer(duration: phaseDuration) {
+            validateAndComplete()
+        }
+    }
+
+    private func validateAndComplete() {
+        let range = recordedMax - recordedMin
+        if range >= minimumRange {
             phase = .done
+        } else {
+            phase = .failedNarrowRange
         }
     }
 

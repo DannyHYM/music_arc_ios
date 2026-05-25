@@ -12,23 +12,20 @@ struct MusicArcApp: App {
 
     static let sharedModelContainer: ModelContainer = {
         let schema = Schema([GameSession.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let persistentConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
-            return try ModelContainer(for: schema, configurations: [config])
+            return try ModelContainer(for: schema, configurations: [persistentConfig])
         } catch {
-            // Schema changed incompatibly -- delete old store and retry
-            let storeURL = config.url
-            try? FileManager.default.removeItem(at: storeURL)
-            // Also remove journal/wal files
-            let dir = storeURL.deletingLastPathComponent()
-            let storeName = storeURL.lastPathComponent
-            for suffix in ["-shm", "-wal"] {
-                try? FileManager.default.removeItem(at: dir.appendingPathComponent(storeName + suffix))
-            }
+            // The persistent store could not be opened (typically a schema change).
+            // Fall back to an in-memory container so the app stays usable, but preserve
+            // the on-disk store untouched — a real migration plan can recover from it
+            // in a future release. Patient sees an empty history this launch.
+            NSLog("MusicArc: persistent ModelContainer failed (\(error)); falling back to in-memory.")
+            let inMemoryConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             do {
-                return try ModelContainer(for: schema, configurations: [config])
+                return try ModelContainer(for: schema, configurations: [inMemoryConfig])
             } catch {
-                fatalError("Could not create ModelContainer: \(error)")
+                fatalError("Could not create even an in-memory ModelContainer: \(error)")
             }
         }
     }()

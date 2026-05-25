@@ -6,6 +6,7 @@ struct SessionSummaryView: View {
     @Binding var navigationPath: NavigationPath
     @Environment(\.modelContext) private var modelContext
     @State private var isSaved = false
+    @State private var saveError: String?
 
     var body: some View {
         ZStack {
@@ -37,6 +38,7 @@ struct SessionSummaryView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle("Session Summary")
         .navigationBarTitleDisplayMode(.inline)
+        .dynamicTypeSize(.medium ... .accessibility3)
     }
 
     // MARK: - Header
@@ -93,6 +95,8 @@ struct SessionSummaryView: View {
             }
         }
         .frame(width: 140, height: 140)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Tree grew to \(result.growthPercentage) percent")
     }
 
     // MARK: - Stats
@@ -149,6 +153,14 @@ struct SessionSummaryView: View {
             .tint(isSaved ? .green : Color(red: 0.25, green: 0.6, blue: 0.25))
             .disabled(isSaved)
 
+            if let saveError {
+                Label(saveError, systemImage: "exclamationmark.triangle.fill")
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 8)
+            }
+
             Button {
                 navigationPath.removeLast(navigationPath.count)
             } label: {
@@ -174,8 +186,14 @@ struct SessionSummaryView: View {
             treeSpecies: result.treeSpecies
         )
         modelContext.insert(session)
-        try? modelContext.save()
-        isSaved = true
+        do {
+            try modelContext.save()
+            isSaved = true
+            saveError = nil
+        } catch {
+            modelContext.delete(session)
+            saveError = "Couldn't save: \(error.localizedDescription)"
+        }
     }
 
     private var gradeIcon: String {
@@ -186,10 +204,11 @@ struct SessionSummaryView: View {
     }
 
     private var gradeLabel: String {
-        if result.treeGrowth >= 0.9 { return "Magnificent Oak!" }
-        if result.treeGrowth >= 0.7 { return "Strong Sapling!" }
+        let species = result.treeSpecies.displayName
+        if result.treeGrowth >= 0.9 { return "Magnificent \(species)!" }
+        if result.treeGrowth >= 0.7 { return "Strong \(species) Sapling!" }
         if result.treeGrowth >= 0.5 { return "Growing Nicely!" }
-        return "Keep Planting!"
+        return "Keep Growing!"
     }
 
     private var gradeColor: Color {

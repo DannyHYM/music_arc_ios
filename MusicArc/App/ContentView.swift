@@ -5,9 +5,13 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            HomeView(navigationPath: $navigationPath)
+            WelcomeView(navigationPath: $navigationPath)
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
+                    case .clinicianPin:
+                        ClinicianPinView(navigationPath: $navigationPath)
+                    case .clinicianConfig:
+                        ClinicianConfigView(navigationPath: $navigationPath)
                     case .calibration(let config):
                         CalibrationView(config: config, navigationPath: $navigationPath)
                     case .game(let config, let calibration):
@@ -18,8 +22,8 @@ struct ContentView: View {
                         )
                     case .summary(let result):
                         SessionSummaryView(result: result, navigationPath: $navigationPath)
-                    case .history:
-                        SessionHistoryView()
+                    case .history(let clinicianAccess):
+                        SessionHistoryView(clinicianAccess: clinicianAccess)
                     case .treePreview(let species):
                         TreePreviewView(species: species, navigationPath: $navigationPath)
                     }
@@ -29,10 +33,12 @@ struct ContentView: View {
 }
 
 enum AppRoute: Hashable {
+    case clinicianPin
+    case clinicianConfig
     case calibration(GameConfig)
     case game(GameConfig, CalibrationData)
     case summary(GameResult)
-    case history
+    case history(clinicianAccess: Bool)
     case treePreview(TreeSpecies)
 }
 

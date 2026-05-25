@@ -3,11 +3,15 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct SessionHistoryView: View {
+    var clinicianAccess: Bool = false
+
     @Query(sort: \GameSession.date, order: .forward) private var sessions: [GameSession]
     @Environment(\.modelContext) private var modelContext
     @State private var showingExportSheet = false
     @State private var exportURL: URL?
     @State private var selectedSession: GameSession?
+    @State private var showingExportConsent = false
+    @State private var exportErrorMessage: String?
 
     var body: some View {
         Group {
@@ -19,17 +23,31 @@ struct SessionHistoryView: View {
         }
         .navigationTitle("My Forest")
         .toolbar {
-            if !sessions.isEmpty {
+            if !sessions.isEmpty && clinicianAccess {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        exportAllSessions()
+                        showingExportConsent = true
                     } label: {
                         Label("Export", systemImage: "square.and.arrow.up")
                     }
                 }
             }
         }
-        .sheet(isPresented: $showingExportSheet) {
+        .alert("Export session data?", isPresented: $showingExportConsent) {
+            Button("Cancel", role: .cancel) {}
+            Button("Export") { exportAllSessions() }
+        } message: {
+            Text("This will share a file containing all of your session records. Only share with your clinician or someone you trust.")
+        }
+        .alert("Export failed", isPresented: Binding(
+            get: { exportErrorMessage != nil },
+            set: { if !$0 { exportErrorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(exportErrorMessage ?? "")
+        }
+        .sheet(isPresented: $showingExportSheet, onDismiss: cleanupExportFile) {
             if let url = exportURL {
                 ShareSheet(activityItems: [url])
             }
@@ -206,15 +224,26 @@ struct SessionHistoryView: View {
             )
         }
 
-        guard let data = try? encoder.encode(exportData) else { return }
+        do {
+            let data = try encoder.encode(exportData)
 
-        let tempDir = FileManager.default.temporaryDirectory
-        let filename = "musicarc_forest_\(Date.now.formatted(.iso8601.year().month().day())).json"
-        let fileURL = tempDir.appendingPathComponent(filename)
+            let tempDir = FileManager.default.temporaryDirectory
+            let filename = "musicarc_forest_\(Date.now.formatted(.iso8601.year().month().day())).json"
+            let fileURL = tempDir.appendingPathComponent(filename)
 
-        try? data.write(to: fileURL)
-        exportURL = fileURL
-        showingExportSheet = true
+            try data.write(to: fileURL, options: .atomic)
+            exportURL = fileURL
+            showingExportSheet = true
+        } catch {
+            exportErrorMessage = error.localizedDescription
+        }
+    }
+
+    private func cleanupExportFile() {
+        if let url = exportURL {
+            try? FileManager.default.removeItem(at: url)
+        }
+        exportURL = nil
     }
 }
 

@@ -17,13 +17,19 @@ enum TreeSpecies: String, CaseIterable, Codable {
         }
     }
 
+    private static let oakRenderer = OakTreeRenderer()
+    private static let roundRenderer = RoundTreeRenderer()
+    private static let bushyRenderer = BushyTreeRenderer()
+    private static let pineRenderer = PineTreeRenderer()
+    private static let acaciaRenderer = AcaciaTreeRenderer()
+
     var renderer: any TreeRenderer {
         switch self {
-        case .oak: return OakTreeRenderer()
-        case .round: return RoundTreeRenderer()
-        case .bushy: return BushyTreeRenderer()
-        case .pine: return PineTreeRenderer()
-        case .acacia: return AcaciaTreeRenderer()
+        case .oak: return Self.oakRenderer
+        case .round: return Self.roundRenderer
+        case .bushy: return Self.bushyRenderer
+        case .pine: return Self.pineRenderer
+        case .acacia: return Self.acaciaRenderer
         }
     }
 
