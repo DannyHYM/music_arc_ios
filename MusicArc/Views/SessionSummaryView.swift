@@ -50,7 +50,7 @@ struct SessionSummaryView: View {
                 .foregroundStyle(gradeColor)
             Text(gradeLabel)
                 .font(.title2.bold())
-                .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
+                .foregroundStyle(Color.forestDark)
             if result.inputMode != .camera {
                 Label(result.inputMode.rawValue, systemImage: result.inputMode == .touch ? "hand.draw" : "play.rectangle")
                     .font(.caption)
@@ -150,7 +150,7 @@ struct SessionSummaryView: View {
                 .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(isSaved ? .green : Color(red: 0.25, green: 0.6, blue: 0.25))
+            .tint(isSaved ? .green : Color.forestPrimary)
             .disabled(isSaved)
 
             if let saveError {
@@ -167,7 +167,7 @@ struct SessionSummaryView: View {
                 Text("Back to Home")
                     .font(.body)
             }
-            .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
+            .foregroundStyle(Color.forestMid)
         }
     }
 

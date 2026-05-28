@@ -76,7 +76,7 @@ struct ClinicianConfigView: View {
 
             Text("Configure Patient Exercise")
                 .font(.headline)
-                .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
+                .foregroundStyle(Color.forestDark)
 
             Text("These settings will be used every time the patient taps Begin.")
                 .font(.caption)
@@ -92,7 +92,7 @@ struct ClinicianConfigView: View {
         VStack(spacing: 14) {
             Text("Session")
                 .font(.headline)
-                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+                .foregroundStyle(Color.forestSoft)
 
             VStack(spacing: 12) {
                 configRow(label: "Reps", value: "\(repCount)", icon: "repeat") {
@@ -140,7 +140,7 @@ struct ClinicianConfigView: View {
     ) -> some View {
         HStack {
             Image(systemName: icon)
-                .foregroundStyle(Color(red: 0.3, green: 0.6, blue: 0.3))
+                .foregroundStyle(Color.forestAccent)
                 .frame(width: 24)
             Text(label)
                 .font(.body)
@@ -159,7 +159,7 @@ struct ClinicianConfigView: View {
         VStack(spacing: 10) {
             Text("Input Mode")
                 .font(.headline)
-                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+                .foregroundStyle(Color.forestSoft)
 
             Picker("Input Mode", selection: $inputMode) {
                 ForEach(InputMode.allCases, id: \.self) { mode in
@@ -200,7 +200,7 @@ struct ClinicianConfigView: View {
         VStack(spacing: 10) {
             Text("Tracking Arm")
                 .font(.headline)
-                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+                .foregroundStyle(Color.forestSoft)
 
             Picker("Tracking Arm", selection: $trackingArm) {
                 ForEach(TrackingArm.allCases, id: \.self) { arm in
@@ -222,7 +222,7 @@ struct ClinicianConfigView: View {
         VStack(spacing: 10) {
             Text("Tree Previews")
                 .font(.headline)
-                .foregroundStyle(Color(red: 0.2, green: 0.4, blue: 0.2))
+                .foregroundStyle(Color.forestSoft)
 
             HStack(spacing: 12) {
                 ForEach(TreeSpecies.allCases, id: \.self) { species in
@@ -240,7 +240,7 @@ struct ClinicianConfigView: View {
                         .padding(.vertical, 12)
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                     }
-                    .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
+                    .foregroundStyle(Color.forestMid)
                 }
             }
 
@@ -263,7 +263,7 @@ struct ClinicianConfigView: View {
                     .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
+            .tint(Color.forestPrimary)
 
             Button {
                 testRun()
@@ -274,7 +274,7 @@ struct ClinicianConfigView: View {
                     .padding(.vertical, 12)
             }
             .buttonStyle(.bordered)
-            .tint(Color(red: 0.2, green: 0.45, blue: 0.2))
+            .tint(Color.forestMid)
 
             Button {
                 navigationPath.append(AppRoute.history(clinicianAccess: true))
@@ -285,7 +285,7 @@ struct ClinicianConfigView: View {
                     .padding(.vertical, 12)
             }
             .buttonStyle(.bordered)
-            .tint(Color(red: 0.2, green: 0.45, blue: 0.2))
+            .tint(Color.forestMid)
         }
     }
 

@@ -280,9 +280,7 @@ final class GameEngine {
                 currentRepGrowth = 0.0
                 growthSpurtAccumulator = 0.0
                 audio.playDayTransition()
-                showPhasePrompt(currentRepIndex == 0
-                    ? "Raise the sun over the line!"
-                    : "Raise the sun over the line!")
+                showPhasePrompt("Raise the sun over the line!")
             }
             phaseTimeRemaining = rep.activeEndTime - elapsedTime
             updateGrowth(dt: dt)

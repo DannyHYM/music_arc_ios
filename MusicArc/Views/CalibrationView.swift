@@ -249,7 +249,7 @@ struct CalibrationView: View {
                     .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
+            .tint(Color.forestPrimary)
             .padding(.horizontal, 40)
 
         case .done:

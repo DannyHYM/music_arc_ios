@@ -19,11 +19,11 @@ struct ClinicianPinView: View {
 
                 Image(systemName: "lock.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
+                    .foregroundStyle(Color.forestMid)
 
                 Text("Clinician Access")
                     .font(.title2.weight(.semibold))
-                    .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
+                    .foregroundStyle(Color.forestDark)
 
                 Text("Enter the 4-digit PIN to configure exercises.")
                     .font(.subheadline)
@@ -57,11 +57,11 @@ struct ClinicianPinView: View {
         HStack(spacing: 18) {
             ForEach(0..<pinLength, id: \.self) { i in
                 Circle()
-                    .stroke(Color(red: 0.2, green: 0.45, blue: 0.2), lineWidth: 2)
+                    .stroke(Color.forestMid, lineWidth: 2)
                     .background(
                         Circle()
                             .fill(i < enteredDigits.count
-                                  ? Color(red: 0.25, green: 0.6, blue: 0.25)
+                                  ? Color.forestPrimary
                                   : Color.clear)
                     )
                     .frame(width: 22, height: 22)

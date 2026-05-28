@@ -4,7 +4,6 @@ struct WelcomeView: View {
     @Binding var navigationPath: NavigationPath
 
     @State private var prescription: Prescription?
-    @State private var didLoad = false
 
     var body: some View {
         ZStack {
@@ -47,7 +46,7 @@ struct WelcomeView: View {
 
             Text("Welcome to MusicArc")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.15, green: 0.35, blue: 0.15))
+                .foregroundStyle(Color.forestDark)
                 .multilineTextAlignment(.center)
         }
     }
@@ -62,7 +61,7 @@ struct WelcomeView: View {
                 .padding(.vertical, 22)
         }
         .buttonStyle(.borderedProminent)
-        .tint(Color(red: 0.25, green: 0.6, blue: 0.25))
+        .tint(Color.forestPrimary)
         .accessibilityLabel("Begin session")
         .accessibilityHint("Starts your exercise session.")
     }
@@ -87,7 +86,7 @@ struct WelcomeView: View {
                 Text("Set Up Now")
                     .font(.subheadline.weight(.medium))
             }
-            .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2))
+            .foregroundStyle(Color.forestMid)
             .padding(.top, 4)
         }
         .padding(20)
@@ -106,7 +105,7 @@ struct WelcomeView: View {
                 .padding(.vertical, 12)
         }
         .buttonStyle(.bordered)
-        .tint(Color(red: 0.2, green: 0.45, blue: 0.2))
+        .tint(Color.forestMid)
         .accessibilityHint("See the trees you have grown from past sessions.")
     }
 
@@ -118,7 +117,7 @@ struct WelcomeView: View {
         } label: {
             Text("I'm a clinician")
                 .font(.footnote)
-                .foregroundStyle(Color(red: 0.2, green: 0.45, blue: 0.2).opacity(0.7))
+                .foregroundStyle(Color.forestMid.opacity(0.7))
                 .underline()
         }
         .accessibilityLabel("Clinician access")
@@ -130,7 +129,6 @@ struct WelcomeView: View {
     private func loadPrescription() {
         // Always refresh on appear — the clinician may have just saved a new config.
         prescription = PrescriptionStore.shared.load()
-        didLoad = true
     }
 
     private func beginSession() {
