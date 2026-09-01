@@ -49,6 +49,7 @@
 		D0EFAE09BC403093F1EE6B2E /* sprout.svg in Resources */ = {isa = PBXBuildFile; fileRef = B9207C625FC0B35B765DB1A5 /* sprout.svg */; };
 		D462C7256439BA4B1377F3EE /* RoundTreeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7ED1ADBF56369B9CD19A04 /* RoundTreeRenderer.swift */; };
 		D6BA59D135F04D26ED644807 /* full.svg in Resources */ = {isa = PBXBuildFile; fileRef = C7E38313875FF286810A922F /* full.svg */; };
+		D73A456C6A7D0EBC2A33672D /* Color+MusicArc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3124BBA4F240D92DCCB9D050 /* Color+MusicArc.swift */; };
 		E715C0DD10226848E7E1C416 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A49F3B3260B61412A8A1BFD /* Assets.xcassets */; };
 		EA693BEE79DE4EC0F27D27D6 /* ClinicianAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67A49A8AAC128E7CA598D7D6 /* ClinicianAuth.swift */; };
 		EC6553ADAEB907EA1CFDBC3C /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC8682F00CE3FF01A6AC018 /* AudioManager.swift */; };
@@ -75,6 +76,7 @@
 		2569E56158870D669FD97A05 /* MusicArcTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MusicArcTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryView.swift; sourceTree = "<group>"; };
 		2E6F7CB62C6546907AC569C0 /* Rep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rep.swift; sourceTree = "<group>"; };
+		3124BBA4F240D92DCCB9D050 /* Color+MusicArc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+MusicArc.swift"; sourceTree = "<group>"; };
 		37C7E5EEB9186E9D0A1A7F29 /* CalibrationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationData.swift; sourceTree = "<group>"; };
 		3944A89AB12330F73161A38E /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		3DC00E583BEDC0530B292CB0 /* OakTreeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OakTreeRenderer.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				6B8D3F53713F1BE779068412 /* CameraPreviewView.swift */,
 				8E2D15F9294D648A889A3EF3 /* ClinicianConfigView.swift */,
 				8D1AFAC66664C3611F402A7D /* ClinicianPinView.swift */,
+				3124BBA4F240D92DCCB9D050 /* Color+MusicArc.swift */,
 				69E2E6D38F1B7857AD869D81 /* GameView.swift */,
 				2DA9C169AA2551E2BE84E546 /* SessionHistoryView.swift */,
 				80548BF01F31F9644D7ECD98 /* SessionSummaryView.swift */,
@@ -383,6 +386,7 @@
 				EA693BEE79DE4EC0F27D27D6 /* ClinicianAuth.swift in Sources */,
 				9A217EC1676269A4F3255F99 /* ClinicianConfigView.swift in Sources */,
 				AD6CF3F3A778C73BA707B261 /* ClinicianPinView.swift in Sources */,
+				D73A456C6A7D0EBC2A33672D /* Color+MusicArc.swift in Sources */,
 				5F43E047C092FD1197AF0B43 /* ContentView.swift in Sources */,
 				A37798E95DC5FB402DB2F8DE /* DemoPoseProvider.swift in Sources */,
 				91ED0E9502AAC0348CA2B5D1 /* GameConfig.swift in Sources */,
