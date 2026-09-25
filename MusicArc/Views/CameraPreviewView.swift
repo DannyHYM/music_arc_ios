@@ -6,12 +6,27 @@ struct CameraPreviewView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> PreviewUIView {
         let view = PreviewUIView()
-        view.previewLayer.session = session
         view.previewLayer.videoGravity = .resizeAspectFill
+        attach(session, to: view.previewLayer)
         return view
     }
 
-    func updateUIView(_ uiView: PreviewUIView, context: Context) {}
+    func updateUIView(_ uiView: PreviewUIView, context: Context) {
+        if uiView.previewLayer.session !== session {
+            attach(session, to: uiView.previewLayer)
+        }
+    }
+
+    /// Attaching a session takes the session's internal lock. On the main thread that means
+    /// waiting out whatever startRunning()/configuration is in progress on the session queue —
+    /// a lengthy operation when the data output physically rotates buffers — so the UI froze
+    /// at the exact moment the preview appeared. CALayer properties are thread-safe, so do the
+    /// attach off the main thread and let the layer pick the session up whenever it's ready.
+    private func attach(_ session: AVCaptureSession, to layer: AVCaptureVideoPreviewLayer) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            layer.session = session
+        }
+    }
 
     class PreviewUIView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }

@@ -1,6 +1,7 @@
 import Vision
 import AVFoundation
 import Combine
+import os
 
 final class PoseDetector: PoseProvider {
     var armHeightPublisher: AnyPublisher<Double, Never> {
@@ -21,6 +22,9 @@ final class PoseDetector: PoseProvider {
     private var cancellables = Set<AnyCancellable>()
     private let request = VNDetectHumanBodyPoseRequest()
     private let minConfidence: Float = 0.3
+    private let poseQueue = DispatchQueue(label: "com.musicarc.pose", qos: .userInteractive)
+    /// True while a frame is inside Vision. Frames that arrive meanwhile are dropped.
+    private let isProcessing = OSAllocatedUnfairLock(initialState: false)
 
     private var shoulderKey: VNHumanBodyPoseObservation.JointName {
         trackingArm == .right ? .rightShoulder : .leftShoulder
@@ -40,9 +44,22 @@ final class PoseDetector: PoseProvider {
         cameraManager.configure()
 
         cameraManager.framePublisher
-            .receive(on: DispatchQueue(label: "com.musicarc.pose", qos: .userInteractive))
             .sink { [weak self] pixelBuffer in
-                self?.processFrame(pixelBuffer)
+                guard let self else { return }
+                // Drop the frame if Vision is still working on the previous one. Queuing
+                // frames behind a slow perform() (as receive(on:) did) only adds latency —
+                // the skeleton lags further and further behind the arm — and pins camera
+                // buffers in the backlog. Latency is now bounded at one frame.
+                let claimed = self.isProcessing.withLock { busy -> Bool in
+                    if busy { return false }
+                    busy = true
+                    return true
+                }
+                guard claimed else { return }
+                self.poseQueue.async {
+                    self.processFrame(pixelBuffer)
+                    self.isProcessing.withLock { $0 = false }
+                }
             }
             .store(in: &cancellables)
 

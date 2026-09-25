@@ -1,37 +1,50 @@
 import AVFoundation
 import AudioToolbox
 
+/// Every piece of audio work — session activation, engine start-up, buffer synthesis,
+/// scheduling, and even the system-sound countdown ticks — runs on `audioQueue`.
+///
+/// `AVAudioSession.setActive`, `AVAudioEngine.start()`, and the first `AudioServicesPlaySystemSound`
+/// are blocking calls that take hundreds of milliseconds (seconds on Bluetooth routes). They used to
+/// run synchronously on the main thread from inside the game tick, which froze the UI (countdown
+/// stuck, tree not moving) while the camera preview — rendered by the capture pipeline, not the
+/// main thread — kept moving. Nothing here may block the caller.
 final class AudioManager {
     static let shared = AudioManager()
 
     private let engine = AVAudioEngine()
-    private let players: [AVAudioPlayerNode]
+    private var players: [AVAudioPlayerNode] = []
     private let format: AVAudioFormat
     private let sampleRate: Double = 44100
-    private let serialQueue = DispatchQueue(label: "com.musicarc.audio")
+    private let audioQueue = DispatchQueue(label: "com.musicarc.audio", qos: .userInitiated)
     private var nextPlayerIndex = 0
-    private var sessionConfigured = false
+    private var isGraphBuilt = false
+    private var isSessionConfigured = false
 
     private init() {
         guard let fmt = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1) else {
             fatalError("Failed to create audio format")
         }
         format = fmt
-        players = (0..<4).map { _ in AVAudioPlayerNode() }
-        for player in players {
-            engine.attach(player)
-            engine.connect(player, to: engine.mainMixerNode, format: format)
-        }
+        // Deliberately no engine-graph work here: `shared` is first touched on the main thread
+        // (GameEngine.init) and instantiating the output unit is not cheap. See ensureRunningLocked.
+    }
+
+    /// Warms up the audio session and engine in the background. Safe to call repeatedly.
+    /// Call it well before the first tone (app launch, session start) so the first in-game
+    /// sound doesn't pay the hardware start-up cost at the worst possible moment.
+    func prepare() {
+        audioQueue.async { self.ensureRunningLocked() }
     }
 
     // MARK: - Countdown (iOS system sounds — placeholder)
 
     func playCountdownTick() {
-        AudioServicesPlaySystemSound(1104)
+        audioQueue.async { AudioServicesPlaySystemSound(1104) }
     }
 
     func playCountdownGo() {
-        AudioServicesPlaySystemSound(1025)
+        audioQueue.async { AudioServicesPlaySystemSound(1025) }
     }
 
     // MARK: - Growth
@@ -57,15 +70,17 @@ final class AudioManager {
     // MARK: - Session Complete
 
     func playTreeComplete() {
-        guard let b1 = buildBuffer(frequencies: [523.25], duration: 0.12, volume: 0.25),
-              let b2 = buildBuffer(frequencies: [659.25], duration: 0.12, volume: 0.25),
-              let b3 = buildBuffer(frequencies: [783.99, 1046.5], duration: 0.3, volume: 0.25)
-        else { return }
-        ensureRunning()
-        let player = checkoutPlayer()
-        player.scheduleBuffer(b1, completionCallbackType: .dataPlayedBack) { _ in }
-        player.scheduleBuffer(b2, completionCallbackType: .dataPlayedBack) { _ in }
-        player.scheduleBuffer(b3, completionCallbackType: .dataPlayedBack) { _ in }
+        audioQueue.async {
+            guard self.ensureRunningLocked(),
+                  let b1 = self.buildBuffer(frequencies: [523.25], duration: 0.12, volume: 0.25),
+                  let b2 = self.buildBuffer(frequencies: [659.25], duration: 0.12, volume: 0.25),
+                  let b3 = self.buildBuffer(frequencies: [783.99, 1046.5], duration: 0.3, volume: 0.25)
+            else { return }
+            let player = self.checkoutPlayerLocked()
+            player.scheduleBuffer(b1, completionCallbackType: .dataPlayedBack) { _ in }
+            player.scheduleBuffer(b2, completionCallbackType: .dataPlayedBack) { _ in }
+            player.scheduleBuffer(b3, completionCallbackType: .dataPlayedBack) { _ in }
+        }
     }
 
     // MARK: - Tone Generation
@@ -75,10 +90,13 @@ final class AudioManager {
     }
 
     private func playChord(frequencies: [Double], duration: Double, volume: Float = 0.3) {
-        guard let buffer = buildBuffer(frequencies: frequencies, duration: duration, volume: volume) else { return }
-        ensureRunning()
-        let player = checkoutPlayer()
-        player.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { _ in }
+        audioQueue.async {
+            guard self.ensureRunningLocked(),
+                  let buffer = self.buildBuffer(frequencies: frequencies, duration: duration, volume: volume)
+            else { return }
+            self.checkoutPlayerLocked()
+                .scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { _ in }
+        }
     }
 
     private func buildBuffer(frequencies: [Double], duration: Double, volume: Float) -> AVAudioPCMBuffer? {
@@ -114,31 +132,50 @@ final class AudioManager {
         return buffer
     }
 
-    private func checkoutPlayer() -> AVAudioPlayerNode {
-        serialQueue.sync {
-            let player = players[nextPlayerIndex]
-            nextPlayerIndex = (nextPlayerIndex + 1) % players.count
-            return player
-        }
+    // MARK: - Engine lifecycle (audioQueue only)
+
+    /// Must be called on `audioQueue`, after `ensureRunningLocked()` returned true.
+    private func checkoutPlayerLocked() -> AVAudioPlayerNode {
+        let player = players[nextPlayerIndex]
+        nextPlayerIndex = (nextPlayerIndex + 1) % players.count
+        return player
     }
 
-    private func ensureRunning() {
-        serialQueue.sync {
-            if !sessionConfigured {
-                try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
-                try? AVAudioSession.sharedInstance().setActive(true)
-                sessionConfigured = true
+    /// Must be called on `audioQueue`. Builds the graph, activates the session and starts the
+    /// engine on first use, and restarts the engine after an interruption or route change.
+    /// Returns false when the engine couldn't be started; the caller drops that sound and the
+    /// next call retries. Audio is non-critical, so failures never surface to the game.
+    @discardableResult
+    private func ensureRunningLocked() -> Bool {
+        if !isGraphBuilt {
+            players = (0..<4).map { _ in AVAudioPlayerNode() }
+            for player in players {
+                engine.attach(player)
+                engine.connect(player, to: engine.mainMixerNode, format: format)
             }
-            if !engine.isRunning {
-                do {
-                    try engine.start()
-                    for player in players {
-                        player.play()
-                    }
-                } catch {
-                    // Audio is non-critical; subsequent calls will retry.
-                }
+            isGraphBuilt = true
+        }
+
+        if !isSessionConfigured {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
+                try AVAudioSession.sharedInstance().setActive(true)
+                isSessionConfigured = true
+            } catch {
+                // Leave the flag false so the next call retries.
             }
         }
+
+        if !engine.isRunning {
+            do {
+                try engine.start()
+                for player in players {
+                    player.play()
+                }
+            } catch {
+                return false
+            }
+        }
+        return true
     }
 }

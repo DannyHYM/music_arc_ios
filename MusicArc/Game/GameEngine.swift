@@ -70,6 +70,10 @@ final class GameEngine {
     func start() {
         guard !isRunning else { return }
 
+        // Spin the audio hardware up in the background now so the first tone after the
+        // countdown doesn't stall the main thread on session activation / engine start.
+        audio.prepare()
+
         reps = RepScheduler.generate(config: config)
         scoreTracker.reset()
         elapsedTime = 0
