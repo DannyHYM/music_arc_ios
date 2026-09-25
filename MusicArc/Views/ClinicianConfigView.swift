@@ -318,10 +318,8 @@ struct ClinicianConfigView: View {
     }
 
     private func testRun() {
-        // Save before testing so the test reflects what the patient will see.
-        let prescription = Prescription(config: currentConfig, lastUpdated: .now)
-        try? PrescriptionStore.shared.save(prescription)
-
+        // Dry run: plays the on-screen settings without touching the saved prescription.
+        // Only "Save Configuration" changes what the patient gets on Begin.
         let config = currentConfig
         if config.inputMode == .camera {
             navigationPath.append(AppRoute.calibration(config))
