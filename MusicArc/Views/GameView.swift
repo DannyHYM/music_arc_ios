@@ -10,6 +10,9 @@ struct GameView: View {
     @State private var engine: GameEngine?
     @State private var hasStarted = false
     @State private var showQuitConfirmation = false
+    /// Lives here rather than in CameraPiPView so pausing (which removes the PiP from the
+    /// hierarchy) and resuming keeps the patient's choice instead of popping it back open.
+    @State private var isCameraPiPCollapsed = false
     @State private var lightHaptic = UIImpactFeedbackGenerator(style: .light)
     @State private var softHaptic = UIImpactFeedbackGenerator(style: .soft)
     @Environment(\.scenePhase) private var scenePhase
@@ -148,27 +151,87 @@ struct GameView: View {
     // MARK: - Camera PiP
 
     private func cameraPiP(session: AVCaptureSession, engine: GameEngine) -> some View {
+        CameraPiPView(session: session, engine: engine, isCollapsed: $isCameraPiPCollapsed)
+    }
+}
+
+/// Camera preview + skeleton in the top-left, collapsible to a pull tab on the left edge.
+///
+/// Isolated so the 30 Hz `currentPose` updates re-render only this small view. When the
+/// overlay lived inside GameView.body, every pose frame re-evaluated the whole scene
+/// (tree, sky, HUD) on the main thread on top of the game tick.
+///
+/// Collapsing only translates the card off-screen; the capture session and Vision keep
+/// running, so tracking, scoring and the tracking-lost banner are unaffected and there is
+/// no session re-attach cost when it slides back.
+private struct CameraPiPView: View {
+    let session: AVCaptureSession
+    let engine: GameEngine
+    @Binding var isCollapsed: Bool
+
+    private let cardSize = CGSize(width: 110, height: 150)
+    private let leadingInset: CGFloat = 12
+    private let tabWidth: CGFloat = 22
+
+    var body: some View {
         VStack {
-            HStack {
+            HStack(spacing: 0) {
+                previewCard
+                pullTab
                 Spacer()
-                ZStack {
-                    CameraPreviewView(session: session)
-                    SkeletonOverlayView(pose: engine.currentPose)
-                }
-                .frame(width: 110, height: 150)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.4), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.4), radius: 6, x: 0, y: 2)
-                .padding(.top, 60)
-                .padding(.trailing, 12)
             }
+            .padding(.leading, leadingInset)
+            // Slide the card fully off-screen so only the tab remains, flush with the edge.
+            .offset(x: isCollapsed ? -(cardSize.width + leadingInset) : 0)
+            .animation(.easeInOut(duration: 0.25), value: isCollapsed)
+            .padding(.top, 60)
             Spacer()
         }
-        .allowsHitTesting(false)
     }
+
+    private var previewCard: some View {
+        ZStack {
+            CameraPreviewView(session: session)
+            SkeletonOverlayView(pose: engine.currentPose)
+        }
+        .frame(width: cardSize.width, height: cardSize.height)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.white.opacity(0.4), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.4), radius: 6, x: 0, y: 2)
+        .contentShape(Rectangle())
+        .onTapGesture { isCollapsed = true }
+        .accessibilityLabel("Camera preview")
+        .accessibilityHint("Tap to hide.")
+    }
+
+    private var pullTab: some View {
+        Button {
+            isCollapsed.toggle()
+        } label: {
+            Image(systemName: isCollapsed ? "chevron.right" : "chevron.left")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: tabWidth, height: 44)
+                .background(
+                    .ultraThinMaterial.opacity(0.85),
+                    in: UnevenRoundedRectangle(
+                        topLeadingRadius: 0,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 10,
+                        topTrailingRadius: 10
+                    )
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isCollapsed ? "Show camera preview" : "Hide camera preview")
+    }
+}
+
+extension GameView {
 
     private var trackingLostBanner: some View {
         VStack {
