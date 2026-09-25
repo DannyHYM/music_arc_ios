@@ -141,8 +141,15 @@ struct ParticleOverlay: View {
         let centerX = size.width * 0.5
         let treeTop = size.height * (0.25 - 0.15 * treeGrowth)
         let sunRange = 1.0 - sunlightThreshold
-        let intensity = sunRange > 0.001 ? min(1.0, (handHeight - sunlightThreshold) / sunRange) : 1.0
-        let sparkleCount = intensity.isFinite ? Int(4 + 8 * intensity) : 4
+        // Clamp at both ends. `isInSunlightZone` (set by the game tick) and `handHeight`
+        // (set by the pose pipeline) update at different moments, so this can render with
+        // the zone flag still true while the hand has already dropped — most easily after a
+        // pause/resume, where the camera restarts and delivers a low arm before the first
+        // tick recomputes the flag. A negative intensity made sparkleCount -1 and trapped
+        // on `0..<sparkleCount`.
+        let rawIntensity = sunRange > 0.001 ? (handHeight - sunlightThreshold) / sunRange : 1.0
+        let intensity = rawIntensity.isFinite ? min(1.0, max(0.0, rawIntensity)) : 0.0
+        let sparkleCount = Int(4 + 8 * intensity)
 
         for i in 0..<sparkleCount {
             let seed = Double(i) * 97.3
