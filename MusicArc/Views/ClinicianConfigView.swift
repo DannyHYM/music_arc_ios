@@ -309,7 +309,9 @@ struct ClinicianConfigView: View {
         let prescription = Prescription(config: currentConfig, lastUpdated: .now)
         do {
             try PrescriptionStore.shared.save(prescription)
-            saveBanner = "Saved — patient can now press Begin."
+            // Hand the phone back to the patient: return to the Welcome screen, which
+            // reloads the prescription on appear and shows the Begin button.
+            navigationPath.removeLast(navigationPath.count)
         } catch {
             saveBanner = "Couldn't save: \(error.localizedDescription)"
         }

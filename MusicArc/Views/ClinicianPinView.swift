@@ -6,6 +6,7 @@ struct ClinicianPinView: View {
     @State private var enteredDigits: String = ""
     @State private var shakeTrigger: Int = 0
     @State private var errorMessage: String?
+    @State private var isUnlocked = false
     @FocusState private var fieldFocused: Bool
 
     private let pinLength = 4
@@ -87,12 +88,25 @@ struct ClinicianPinView: View {
     }
 
     private func handleInput(_ raw: String) {
+        // The TextField's binding setter is not only called per keystroke — UIKit also
+        // re-invokes it with the unchanged text on end-editing (keyboard dismissing as the
+        // next screen is pushed). Without this guard that extra call re-validates "1234"
+        // and navigates a second time, which is what produced the double mount.
+        guard !isUnlocked else { return }
+
         let digits = raw.filter(\.isNumber)
         enteredDigits = String(digits.prefix(pinLength))
         errorMessage = nil
 
         if enteredDigits.count == pinLength {
             if ClinicianAuth.validate(enteredDigits) {
+                isUnlocked = true
+                enteredDigits = ""
+                // Replace this screen with the config screen so Back from Clinician Setup
+                // returns to Welcome rather than to an already-passed PIN gate.
+                if !navigationPath.isEmpty {
+                    navigationPath.removeLast()
+                }
                 navigationPath.append(AppRoute.clinicianConfig)
             } else {
                 withAnimation(.default) {
