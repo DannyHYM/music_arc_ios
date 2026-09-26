@@ -55,6 +55,11 @@ struct GameConfig: Codable, Hashable {
     var totalSessionSeconds: Int { Int(ceil(totalSessionDuration)) }
 
     static var cameraAvailable: Bool {
+        #if DEBUG
+        // Screenshot gallery runs in the simulator but must show the camera-mode UI as a
+        // device would (no "not available" warning, no fallback to touch).
+        if ScreenshotGallery.isActive { return true }
+        #endif
         #if targetEnvironment(simulator)
         return false
         #else

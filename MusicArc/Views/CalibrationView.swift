@@ -26,6 +26,11 @@ struct CalibrationView: View {
     private let samplingGracePeriod: TimeInterval = 0.5
     private let minimumRange: Double = 0.15
 
+    #if DEBUG
+    /// Screenshot gallery only: a fixed phase/pose rendered in place of the live camera pipeline.
+    var mock: CalibrationMock? = nil
+    #endif
+
     enum CalibrationPhase: Equatable {
         case intro
         case raiseArm
@@ -101,6 +106,40 @@ struct CalibrationView: View {
 
     @ViewBuilder
     private var backgroundLayer: some View {
+        #if DEBUG
+        if mock != nil, needsCalibration, phase != .cameraDenied {
+            // Screenshot gallery: a silhouette stands in for the camera feed; the skeleton
+            // overlay and dimming gradient on top are the real ones.
+            PlaceholderPersonView(armRaised: currentHeight > 0.5)
+                .ignoresSafeArea()
+
+            SkeletonOverlayView(pose: currentPose)
+                .ignoresSafeArea()
+
+            cameraDimmingGradient
+        } else {
+            liveBackgroundLayer
+        }
+        #else
+        liveBackgroundLayer
+        #endif
+    }
+
+    private var cameraDimmingGradient: some View {
+        LinearGradient(
+            colors: [
+                Color.black.opacity(0.55),
+                Color.black.opacity(0.2),
+                Color.black.opacity(0.55)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+
+    @ViewBuilder
+    private var liveBackgroundLayer: some View {
         if needsCalibration, let detector = poseDetector, let session = detector.captureSession, phase != .cameraDenied {
             CameraPreviewView(session: session)
                 .ignoresSafeArea()
@@ -108,16 +147,7 @@ struct CalibrationView: View {
             SkeletonOverlayView(pose: currentPose)
                 .ignoresSafeArea()
 
-            LinearGradient(
-                colors: [
-                    Color.black.opacity(0.55),
-                    Color.black.opacity(0.2),
-                    Color.black.opacity(0.55)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            cameraDimmingGradient
         } else {
             LinearGradient(
                 colors: [
@@ -326,6 +356,16 @@ struct CalibrationView: View {
     // MARK: - Lifecycle
 
     private func handleAppear() {
+        #if DEBUG
+        if let mock {
+            phase = mock.phase
+            currentPose = mock.pose
+            currentHeight = mock.height
+            progress = mock.progress
+            return
+        }
+        #endif
+
         // For non-camera modes, no setup is required — patient taps Continue from the intro.
         guard needsCalibration else { return }
 

@@ -4,6 +4,18 @@ struct ContentView: View {
     @State private var navigationPath = NavigationPath()
 
     var body: some View {
+        #if DEBUG
+        if let screen = ScreenshotGallery.requestedScreen {
+            ScreenshotGallery.makeView(for: screen)
+        } else {
+            productBody
+        }
+        #else
+        productBody
+        #endif
+    }
+
+    private var productBody: some View {
         NavigationStack(path: $navigationPath) {
             WelcomeView(navigationPath: $navigationPath)
                 .navigationDestination(for: AppRoute.self) { route in

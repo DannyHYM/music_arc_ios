@@ -17,6 +17,11 @@ struct GameView: View {
     @State private var softHaptic = UIImpactFeedbackGenerator(style: .soft)
     @Environment(\.scenePhase) private var scenePhase
 
+    #if DEBUG
+    /// Screenshot gallery only: a pre-populated engine to render instead of starting a session.
+    var mockEngine: GameEngine? = nil
+    #endif
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
@@ -116,6 +121,12 @@ struct GameView: View {
         .onAppear {
             guard !hasStarted else { return }
             hasStarted = true
+            #if DEBUG
+            if let mockEngine {
+                self.engine = mockEngine
+                return
+            }
+            #endif
             let e = GameEngine(config: config, calibration: calibration)
             e.treeSpecies = .random()
             self.engine = e
@@ -191,7 +202,15 @@ private struct CameraPiPView: View {
 
     private var previewCard: some View {
         ZStack {
+            #if DEBUG
+            if ScreenshotGallery.isActive {
+                PlaceholderPersonView(armRaised: engine.currentArmHeight > 0.5)
+            } else {
+                CameraPreviewView(session: session)
+            }
+            #else
             CameraPreviewView(session: session)
+            #endif
             SkeletonOverlayView(pose: engine.currentPose)
         }
         .frame(width: cardSize.width, height: cardSize.height)

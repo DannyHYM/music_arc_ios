@@ -242,6 +242,14 @@ final class GameEngine {
         }
     }
 
+    #if DEBUG
+    /// Screenshot gallery only: lets a fake provider stand in for the live pipeline so
+    /// GameView renders the camera PiP without a camera.
+    func installMockProvider(_ provider: any PoseProvider) {
+        poseProvider = provider
+    }
+    #endif
+
     func buildResult() -> GameResult {
         GameResult(
             date: .now,

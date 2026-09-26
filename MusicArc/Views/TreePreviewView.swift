@@ -4,6 +4,10 @@ struct TreePreviewView: View {
     let species: TreeSpecies
     @Binding var navigationPath: NavigationPath
 
+    /// Growth shown on appear. The product always starts at 0; the screenshot gallery
+    /// passes 1.0 to show the fully grown tree.
+    var initialGrowth: Double = 0.0
+
     @State private var growth: Double = 0.0
     @State private var isPressing = false
     @GestureState private var isHolding = false
@@ -86,7 +90,7 @@ struct TreePreviewView: View {
             }
         }
         .onAppear {
-            growth = 0
+            growth = initialGrowth
         }
         .onReceive(
             Timer.publish(every: 1.0 / 30.0, on: .main, in: .common).autoconnect()
