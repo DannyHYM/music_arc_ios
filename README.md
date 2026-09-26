@@ -2,6 +2,8 @@
 
 **A gamified iOS rehabilitation app for burn recovery patients, using real-time camera-based pose estimation to turn prescribed shoulder stretching exercises into an interactive tree-growing game.**
 
+MusicArc is a research prototype from the USC Creative Media & Behavioral Health Center (CMBHC), developed with the Burn Unit at Los Angeles General Medical Center. It is free and open source; the team has no commercial plans for it.
+
 Built entirely with Apple's first-party frameworks — SwiftUI, Vision, AVFoundation, SwiftData, and Combine — with zero third-party dependencies. All graphics are procedurally rendered and all audio is synthesized at runtime; the app ships with no image or sound assets.
 
 ---
@@ -13,6 +15,68 @@ Patients recovering from burns to the shoulder and axilla must perform repetitiv
 MusicArc addresses this by turning the exercise itself into the game controller. The patient's arm height, measured in real time through the front camera, drives the growth of a procedurally rendered tree. Raising the arm above a threshold makes the tree grow; lowering it during rest phases "waters" the tree and earns a growth bonus for the next repetition. Skipping rest damages the tree's health — making the physiologically necessary recovery periods mechanically rewarding instead of something to rush through.
 
 The design was developed around the stretching protocol used for shoulder/axilla burn rehabilitation (reps of active stretching separated by mandatory rest), and requires no hardware beyond an iPhone.
+
+### Why existing tools fall short
+
+- **Nothing is built for this exercise.** General fitness and physical-therapy apps count reps or play videos; none are designed around the biomechanics of shoulder and axilla burn recovery, and none give feedback *during* the stretch.
+- **Rest is ignored.** The pause between stretches is clinically essential for healing tissue, yet no existing tool tracks or rewards it — and it is exactly what patients in pain skip.
+- **Clinicians are blind between visits.** There is no objective record of whether prescribed exercises are being done at home, how often, or how well.
+- **Hardware is a barrier.** Burn patients already carry a heavy financial burden; solutions that need wearables, depth sensors, or VR headsets are impractical for unsupervised home use.
+- **The experience is purely negative.** No existing tool offers continuous positive feedback to counterbalance the pain and monotony that drive people to quit.
+
+## The Research Project
+
+### Origin
+
+MusicArc was conceived in **CTIN 596, Research Practicum in Interactive Media**, at the USC School of Cinematic Arts, with students working for course credit under the supervision of the USC Creative Media & Behavioral Health Center. The goal was to bridge the gap between generic shoulder-recovery therapy tools and the specific arm and shoulder elevation tasks burn patients need to perform in daily life.
+
+### Clinical collaboration
+
+This project was catalyzed via a collaboration between the USC Creative Media & Behavioral Health Center and the Burn Unit at Los Angeles General Medical Center (LAGMC) via a National Institute on Disability, Independent Living, and Rehabilitation Research (NIDILRR) grant, whose PI is Dr. Haig Yenikomshian, Associate Professor at Keck School of Medicine and (LAGMC) Burn Unit co-director. Occupational therapists (Karin Blen, Vivian Duprey Avalos, Joanna Madrid, and Joann Chun) from the LAGMC outpatient occupational therapy unit were consulted on burn recovery rehabilitation protocols for shoulder and axilla movement post-burn and contributed verbal feedback on the various iterations of the prototype.
+
+### How the prototype evolved
+
+The first playable version was built in Unity, with the same core mechanic of raising and lowering the arm to the side. After clinical feedback from the occupational therapists, development moved to a native iOS app, which is far easier for patients to install and use on a phone they already own.
+
+| Date | Milestone |
+|---|---|
+| Sep 23, 2025 | Idea conceived |
+| Sep 24 – Nov 17, 2025 | Ideation and design sketches |
+| Sep 26, 2025 | Clinic visit 1 — verbal feedback on the concept from LAGMC occupational therapists |
+| Nov 18, 2025 | First playable prototype (Unity) |
+| Dec 9, 2025 | Clinic visit 2 — playtesting and verbal feedback on the prototype |
+| Dec 10, 2025 – present | Rebuilt as a native iOS app |
+
+### Status
+
+MusicArc is a functional prototype under active development. Current work focuses on usability testing and iterative refinement at CMBHC. No human-subjects research has been conducted with the app, and it has not been evaluated in a clinical study; it should be read as a design research prototype, not a validated medical device.
+
+## Contributors
+
+Listed in the order given in the project's invention disclosure.
+
+| | Role / affiliation |
+|---|---|
+| **Yiming "Danny" Huang** | Lead inventor. BS, Arts, Technology and the Business of Innovation, USC Iovine and Young Academy |
+| **Violet Wong** | MA, USC Cinematic Arts — Media Arts, Games & Health |
+| **Caitlyn Guo** | MA, USC Cinematic Arts — Media Arts, Games & Health |
+| **Floyd Scott** | |
+| **Yiqi "Kiwi" Li** | MA, USC Cinematic Arts — Media Arts, Games & Health |
+| **Yunlei Liu** | |
+| **Marientina Gotsis** | Professor of Practice, Interactive Media & Games Division, USC School of Cinematic Arts; Director, USC Creative Media & Behavioral Health Center; CTIN 596 instructor and co-investigator on the NIDILRR grant |
+
+**Clinical partners:** Dr. Haig Yenikomshian (PI, NIDILRR grant; Keck School of Medicine; LAGMC Burn Unit co-director) and occupational therapists Karin Blen, Vivian Duprey Avalos, Joanna Madrid, and Joann Chun of the LAGMC outpatient occupational therapy unit.
+
+## Design Choices
+
+Each mechanic in the game maps to a specific problem in burn rehabilitation adherence:
+
+- **Rest is part of the game, not downtime.** Lowering the arm "waters" the tree; a well-rested rep earns a growth bonus for the next stretch, and skipping rest visibly damages the tree's health. This is the project's central behavioral intervention — it makes the recovery interval that patients most often skip *mechanically consequential*.
+- **The game adapts to the patient, not the other way round.** A short calibration records each patient's own current range of motion, and everything after is scored relative to it. Someone early in recovery with severely limited mobility gets the same full game as someone nearly recovered, and the clinician can tighten the prescription as range improves.
+- **Reframing a painful action.** Raising the arm becomes a voluntary, goal-directed move toward the sun rather than a clinical exercise to endure. Continuous visual growth, synthesized musical feedback, and haptics give immediate positive reinforcement during an activity otherwise associated only with discomfort — countering the fear-avoidance that commonly develops in burn recovery.
+- **The forest is the adherence record.** Every completed session becomes a tree whose size and color reflect that session. Patients see their recovery accumulate; at follow-up visits, clinicians see frequency and quality at a glance without relying on self-report.
+- **Clinician-prescribed, patient-operated.** A PIN-gated setup screen lets the therapist set reps, timings, and input mode once; the patient just taps Begin.
+- **Only the phone they already have.** The front camera is the only sensor, so there is nothing to buy, charge, or set up — and everything runs on-device, so no health-related data ever leaves the phone.
 
 ## How It Works
 
@@ -80,6 +144,16 @@ Captured from the app's own views with sample data; [`docs/ui/`](docs/ui/) has e
     </td>
   </tr>
 </table>
+
+## Related Work
+
+The team surveyed the tools in use at the LAGMC Burn Unit alongside published literature and available mobile apps. What exists falls into three groups:
+
+- **Console and sensor-based exergames.** Studies including a Nintendo Wii pilot (Yohannan et al., *J Burn Care Res*, 2012) and a pediatric randomized trial of videogame therapy versus standard physical therapy found comparable or faster range-of-motion recovery with less pain. All rely on consoles, depth sensors, or VR headsets and are used in supervised clinical or inpatient settings — none are designed for independent home use by burn patients.
+- **Camera-based physical-therapy apps.** Smartphone apps such as Exer Health and MediaPipe-based shoulder tools use pose estimation to monitor form and range of motion without extra hardware, but target general musculoskeletal rehabilitation and include neither gamification nor rest-compliance mechanics.
+- **Gamified shoulder rehabilitation systems.** A multicenter RCT and several scoping reviews report gamified systems for post-surgical and stroke shoulder rehabilitation performing on par with conventional physiotherapy; all target non-burn populations and require specialized hardware (Kinect, Leap Motion, HTC Vive).
+
+None of these combine camera-based pose detection, burn-specific shoulder and axilla protocols, and gamified rest enforcement in a single phone app, and none treat the rest period as a consequential gameplay element. This was an informal review; no formal patent search has been conducted.
 
 ## Technical Overview
 
@@ -196,3 +270,7 @@ Session parameters are adjustable so clinicians can prescribe and progress speci
 | Rest threshold | 0.3 | Normalized arm height counted as resting |
 | Tracking arm | Right | Which arm the pose detector follows |
 | Input mode | Touch | Camera / Touch / Auto Demo |
+
+## License
+
+MusicArc is released under the [GNU General Public License v3.0](LICENSE). The team's intent is free public distribution for patients, clinicians, and researchers; there are no plans to commercialize it.
