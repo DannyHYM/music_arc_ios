@@ -23,6 +23,64 @@ A session consists of a configurable number of repetitions, each with an **activ
 3. **Rest phase** — the patient lowers their arm below the rest threshold to water the tree. Rest compliance above 70% restores tree health and banks a growth multiplier (up to 1.3×) for the next rep; holding the arm up during rest drains tree health.
 4. **Session complete** — results (growth, health, per-rep rest compliance) are persisted locally. The session history screen renders every past session as a tree in a scrollable forest, where each tree's size and color reflect that session's performance — a visual adherence record for both the patient and their care team.
 
+## Screenshots
+
+Captured from the app's own views with sample data; [`docs/ui/`](docs/ui/) has every screen and the script that regenerates them. In the camera screens a silhouette stands in for the live front-camera feed, which the simulator cannot provide; on a device the patient sees themselves, with the same tracking overlay.
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/ui/welcome.png" width="230" alt="Welcome screen with a large Begin button">
+      <br><b>Welcome</b><br>
+      The patient's home screen. One large <b>Begin</b> button starts the session the clinician prescribed; <b>My Trees</b> opens the forest of past sessions. Clinicians enter through the link at the bottom.
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/ui/clinician-setup.png" width="230" alt="Clinician setup screen with reps, hold time, rest time, input mode and tracking arm">
+      <br><b>Clinician Setup</b><br>
+      Behind a PIN. The clinician sets reps, hold and rest times, the input mode (camera, touch, or auto-demo) and which arm to track, then saves the prescription. <b>Test Run</b> plays it without saving.
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/ui/calibration-raise.png" width="230" alt="Calibration screen with the tracked arm raised and a skeleton overlay">
+      <br><b>Calibration</b><br>
+      Before a camera session the patient raises and lowers their arm while the app records their current range of motion. The overlay shows the shoulder, elbow and wrist being tracked; the session is then scored relative to this range, so limited mobility is not penalized.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/ui/game-countdown.png" width="230" alt="Countdown before the session with the two game instructions">
+      <br><b>Countdown</b><br>
+      A three-second countdown with the two rules of the game: raise your hand to grow the tree, lower it to water the tree.
+    </td>
+    <td align="center">
+      <img src="docs/ui/game-active.png" width="230" alt="Active phase: daytime, the sun above the dashed line, tree growing">
+      <br><b>Active phase (day)</b><br>
+      The sun follows the patient's hand. Holding it above the dashed line grows the tree — faster the higher it goes. The card in the top-left shows the camera view with the tracking overlay and can be tucked away with a tap; the dots at the top count reps.
+    </td>
+    <td align="center">
+      <img src="docs/ui/game-rest.png" width="230" alt="Rest phase: night, rain falling, the water level filling">
+      <br><b>Rest phase (night)</b><br>
+      Lowering the arm brings night and rain, filling the water level. A well-watered rest restores tree health and earns a growth bonus for the next rep; keeping the arm up during rest drains health.
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/ui/summary.png" width="230" alt="Session summary with growth percentage, reps, health and rest compliance">
+      <br><b>Session Summary</b><br>
+      Growth, reps completed, tree health and rest compliance for the session. <b>Plant in Forest</b> saves the tree to the patient's history.
+    </td>
+    <td align="center">
+      <img src="docs/ui/history.png" width="230" alt="My Forest: a row of trees, one per past session, with dates">
+      <br><b>My Forest</b><br>
+      Every saved session becomes a tree, sized by that session's growth — a progress record patients can read at a glance. Clinicians can export the underlying data.
+    </td>
+    <td align="center">
+      <img src="docs/ui/tree-pine.png" width="230" alt="Pine tree preview at 100% growth">
+      <br><b>Tree species</b><br>
+      One of five procedurally drawn species (oak, round, bushy, pine, acacia), chosen at random each session. Clinicians can preview each one from the setup screen.
+    </td>
+  </tr>
+</table>
+
 ## Technical Overview
 
 ### Pose Estimation Pipeline
@@ -96,8 +154,9 @@ MusicArc/
 │                   (SwiftUI Canvas)
 ├── Models/         GameConfig, CalibrationData, Rep, GameResult,
 │                   GameSession (SwiftData), TreeSpecies
-└── Views/          Home, Calibration, Game, Session Summary,
-                    Session History, sky & background views
+└── Views/          Welcome, Clinician PIN & Setup, Calibration, Game,
+                    Session Summary, Session History, Tree Preview,
+                    sky & background views
 ```
 
 Data flows one way: input providers publish normalized arm height via Combine → the game engine updates game state → SwiftUI observes the engine and re-renders → audio/haptic feedback fires on state transitions.
