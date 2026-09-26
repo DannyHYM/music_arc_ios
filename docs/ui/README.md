@@ -22,8 +22,7 @@ the file sizes losslessly).
 
 | Screen | File | Notes |
 |---|---|---|
-| Welcome (prescription set) | `welcome.png` | Begin, My Trees, clinician link |
-| Welcome (no prescription) | `welcome-empty.png` | "Ask your clinician" empty state |
+| Welcome | `welcome.png` | Begin, My Trees, clinician link |
 | Calibration – intro | `calibration-intro.png` | Before tapping Begin Calibration |
 | Calibration – raise arm | `calibration-raise.png` | Tracking badge, skeleton, progress and height bars |
 | Calibration – done | `calibration-done.png` | Start Growing / Re-calibrate |

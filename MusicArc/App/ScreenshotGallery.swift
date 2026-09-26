@@ -13,7 +13,7 @@ import Combine
 /// views only carry tiny `#if DEBUG` injection points (a mock engine, a mock calibration state).
 enum ScreenshotGallery {
     static let screenNames: [String] = [
-        "welcome", "welcome-empty",
+        "welcome",
         "clinician-pin", "clinician-setup",
         "calibration-intro", "calibration-raise", "calibration-done",
         "game-countdown", "game-active", "game-rest", "game-paused", "game-finished",
@@ -79,10 +79,6 @@ enum ScreenshotGallery {
         switch name {
         case "welcome":
             seedPrescription()
-            return AnyView(GalleryStack(pushed: false) { _ in EmptyView() })
-
-        case "welcome-empty":
-            PrescriptionStore.shared.reset()
             return AnyView(GalleryStack(pushed: false) { _ in EmptyView() })
 
         case "clinician-pin":

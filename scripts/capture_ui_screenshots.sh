@@ -26,7 +26,7 @@ APP_PATH="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/MusicArc.app"
 
 # Keep in sync with ScreenshotGallery.screenNames.
 SCREENS=(
-  welcome welcome-empty
+  welcome
   clinician-pin clinician-setup
   calibration-intro calibration-raise calibration-done
   game-countdown game-active game-rest game-paused game-finished
